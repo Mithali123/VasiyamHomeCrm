@@ -1,18 +1,50 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #4A5D23;
-  --color-gold: #C9A84C;
-  --color-brand-bg: #F7F4EA;
-  --color-brand-text: #14201A;
-  
+  /* ─── Primary Brand Palette ─────────────────────────────── */
+  --color-primary: #133C27;
+  --color-primary-dark: #0d2e1d;
+  --color-primary-muted: #215B38;
+  --color-gold: #C9A82C;
+  --color-gold-premium: #B8960F;
+
+  /* ─── Backgrounds ──────────────────────────────────────── */
+  --color-brand-bg: #F8F5EE;
+  --color-brand-bg-secondary: #F1E9D4;
+  --color-brand-card: #FFFFFF;
+  --color-brand-border: #E8E2D6;
+
+  /* ─── Typography ───────────────────────────────────────── */
+  --color-brand-text: #1A3C2A;
+  --color-brand-text-secondary: #6B7283;
+  --color-brand-text-muted: #9AA1A9;
+
+  /* ─── Buttons ──────────────────────────────────────────── */
+  --color-btn-secondary-border: #D8CFB9;
+
+  /* ─── Status Badge Backgrounds ─────────────────────────── */
+  --color-status-new-bg: #E8F5EC;
+  --color-status-new-text: #133C27;
+  --color-status-contacted-bg: #FCF3E1;
+  --color-status-contacted-text: #C9A82C;
+  --color-status-qualified-bg: #E1F5E8;
+  --color-status-qualified-text: #133C27;
+  --color-status-sitevisit-bg: #E1F0FA;
+  --color-status-sitevisit-text: #1A6B8C;
+  --color-status-negotiation-bg: #FDF5E1;
+  --color-status-negotiation-text: #B8960F;
+  --color-status-won-bg: #E8F5EC;
+  --color-status-won-text: #133C27;
+  --color-status-lost-bg: #F0F0F2;
+  --color-status-lost-text: #9AA1A9;
+
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
 @layer base {
   *, ::after, ::before {
     box-sizing: border-box;
-    border-color: var(--color-gray-200);
+    border-color: var(--color-brand-border);
   }
 
   body {
@@ -23,6 +55,6 @@
 
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-primary text-white rounded-lg transition-all hover:opacity-90 active:scale-95;
+    @apply px-4 py-2 bg-primary text-white rounded-lg transition-all hover:bg-primary-dark active:scale-95;
   }
 }

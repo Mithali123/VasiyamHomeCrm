@@ -33,19 +33,19 @@ function KPICard({ label, value, change, trend, tooltip, index }: KPICardProps) 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group relative"
+      className="bg-white p-5 rounded-2xl border border-[#E8E2D6] shadow-sm hover:shadow-md transition-shadow group relative"
     >
       {/* Decorative gradient — clipped in its own layer so tooltip is never hidden */}
       <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
         <div
           className={`absolute -bottom-6 -right-6 w-20 h-20 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity ${
-            trend === "up" ? "bg-green-500" : "bg-red-500"
+            trend === "up" ? "bg-[#133C27]" : "bg-red-500"
           }`}
         />
       </div>
 
       <div className="flex items-start justify-between mb-3">
-        <span className="text-xs font-semibold text-gray-500 tracking-wider uppercase leading-tight pr-2">
+        <span className="text-xs font-semibold text-[#6B7283] tracking-wider uppercase leading-tight pr-2">
           {label}
         </span>
 
@@ -55,7 +55,7 @@ function KPICard({ label, value, change, trend, tooltip, index }: KPICardProps) 
             onClick={() => setShowTip((v) => !v)}
             aria-label={`Info about ${label}`}
             className={`p-0.5 rounded-full transition-colors ${
-              showTip ? "text-primary" : "text-gray-300 hover:text-primary"
+              showTip ? "text-primary" : "text-[#9AA1A9] hover:text-primary"
             }`}
           >
             <Info size={14} />
@@ -68,9 +68,9 @@ function KPICard({ label, value, change, trend, tooltip, index }: KPICardProps) 
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 4 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 top-full mt-2 w-52 bg-gray-900 text-white text-[11px] leading-relaxed p-3 rounded-xl shadow-2xl z-50 border border-white/10"
+                className="absolute right-0 top-full mt-2 w-52 bg-[#0d2e1d] text-white text-[11px] leading-relaxed p-3 rounded-xl shadow-2xl z-50 border border-white/10"
               >
-                <div className="absolute -top-1.5 right-2 w-3 h-3 bg-gray-900 rotate-45 border-l border-t border-white/10" />
+                <div className="absolute -top-1.5 right-2 w-3 h-3 bg-[#0d2e1d] rotate-45 border-l border-t border-white/10" />
                 {tooltip}
               </motion.div>
             )}
@@ -79,10 +79,10 @@ function KPICard({ label, value, change, trend, tooltip, index }: KPICardProps) 
       </div>
 
       <div className="flex items-baseline gap-2">
-        <h3 className="text-2xl font-bold text-[#1E1E1E]">{value}</h3>
+        <h3 className="text-2xl font-bold text-[#1A3C2A]">{value}</h3>
         <div
           className={`flex items-center gap-0.5 text-xs font-bold ${
-            trend === "up" ? "text-[#2D7D46]" : "text-[#B31B27]"
+            trend === "up" ? "text-[#133C27]" : "text-[#B31B27]"
           }`}
         >
           {trend === "up" ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
@@ -90,7 +90,7 @@ function KPICard({ label, value, change, trend, tooltip, index }: KPICardProps) 
         </div>
       </div>
 
-      <p className="text-[10px] text-gray-400 mt-1 font-medium italic">vs previous period</p>
+      <p className="text-[10px] text-[#9AA1A9] mt-1 font-medium italic">vs previous period</p>
     </motion.div>
   );
 }

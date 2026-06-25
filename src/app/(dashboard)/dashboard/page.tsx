@@ -28,10 +28,12 @@ export default function DashboardPage() {
       {/* KPI Cards */}
       <KPIGrid />
 
-      {/* Main Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <LeadTrend />
+      {/* Main Charts — Sales Funnel (40%) | Lead Trend (60%) */}
+      <div className="grid grid-cols-1 xl:grid-cols-[2fr_3fr] gap-6">
         <SalesFunnel />
+        <div className="bg-white rounded-[18px] border border-[#E8E2D6] shadow-[0_1px_4px_rgba(0,0,0,0.04)] p-5">
+          <LeadTrend />
+        </div>
       </div>
 
       {/* Analytics Section */}
