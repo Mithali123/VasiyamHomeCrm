@@ -241,12 +241,12 @@ export const SalesFunnel = () => (
 
 // ─── 2. Lead Trend ────────────────────────────────────────────────────────────
 export const LeadTrend = () => (
-  <div className="w-full h-full">
+  <div className="w-full h-full flex flex-col justify-between">
     <div className="mb-1.5">
       <h3 className="text-[#1A3C2A] text-sm font-bold">Lead Trend</h3>
       <p className="text-[#6B7283] text-[10px]">Monthly growth in leads, conversions & bookings</p>
     </div>
-    <div className="w-full h-[220px]">
+    <div className="w-full min-h-[310px] flex-1 mt-2">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={leadTrendData}

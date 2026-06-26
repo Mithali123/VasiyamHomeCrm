@@ -1,4 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   /* ─── Primary Brand Palette ─────────────────────────────── */
@@ -38,7 +41,7 @@
   --color-status-lost-bg: #F0F0F2;
   --color-status-lost-text: #9AA1A9;
 
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', "Inter", system-ui, -apple-system, sans-serif;
 }
 
 @layer base {

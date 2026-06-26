@@ -38,9 +38,8 @@ function KPICard({ label, value, change, trend, tooltip, index }: KPICardProps) 
       {/* Decorative gradient — clipped in its own layer so tooltip is never hidden */}
       <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
         <div
-          className={`absolute -bottom-6 -right-6 w-20 h-20 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity ${
-            trend === "up" ? "bg-[#133C27]" : "bg-red-500"
-          }`}
+          className={`absolute -bottom-6 -right-6 w-20 h-20 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity ${trend === "up" ? "bg-[#133C27]" : "bg-red-500"
+            }`}
         />
       </div>
 
@@ -54,9 +53,8 @@ function KPICard({ label, value, change, trend, tooltip, index }: KPICardProps) 
           <button
             onClick={() => setShowTip((v) => !v)}
             aria-label={`Info about ${label}`}
-            className={`p-0.5 rounded-full transition-colors ${
-              showTip ? "text-primary" : "text-[#9AA1A9] hover:text-primary"
-            }`}
+            className={`p-0.5 rounded-full transition-colors ${showTip ? "text-primary" : "text-[#9AA1A9] hover:text-primary"
+              }`}
           >
             <Info size={14} />
           </button>
@@ -81,9 +79,8 @@ function KPICard({ label, value, change, trend, tooltip, index }: KPICardProps) 
       <div className="flex items-baseline gap-2">
         <h3 className="text-2xl font-bold text-[#1A3C2A]">{value}</h3>
         <div
-          className={`flex items-center gap-0.5 text-xs font-bold ${
-            trend === "up" ? "text-[#133C27]" : "text-[#B31B27]"
-          }`}
+          className={`flex items-center gap-0.5 text-xs font-bold ${trend === "up" ? "text-[#133C27]" : "text-[#B31B27]"
+            }`}
         >
           {trend === "up" ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
           <span>{Math.abs(change)}%</span>
