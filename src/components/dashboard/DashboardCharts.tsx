@@ -300,121 +300,110 @@ const METRIC_TABS: { key: MetricKey; label: string }[] = [
   { key: "conversionRate", label: "Conversion Rate" },
 ];
 
-const BAR_CONFIG: {
-  key: keyof SourceData;
-  label: string;
-  color: string;
-  metricKey: MetricKey;
-}[] = [
-    { key: "totalLeads", label: "Total Leads", color: COLORS.primaryGreen, metricKey: "totalLeads" },
-    { key: "qualifiedLeads", label: "Qualified Leads", color: COLORS.mutedGreen, metricKey: "qualifiedLeads" },
-    { key: "bookings", label: "Bookings", color: COLORS.royalGold, metricKey: "bookings" },
-    { key: "conversionRate", label: "Conversion Rate %", color: COLORS.chartBookings, metricKey: "conversionRate" },
-  ];
-
 export const SourcePerformance = () => {
-  const [active, setActive] = useState<MetricKey>("all");
+  const [activeMetric, setActiveMetric] = useState<MetricKey>("all");
   const [viewMode, setViewMode] = useState<"chart" | "table">("chart");
 
-  const visibleBars = BAR_CONFIG.filter(
-    (b) => active === "all" || b.metricKey === active
-  );
+  // Sort data by the selected metric
+  const sortedData = [...sourceData].sort((a, b) => {
+    if (activeMetric === "all") return b.totalLeads - a.totalLeads;
+    return (b[activeMetric] as number) - (a[activeMetric] as number);
+  });
 
-  const sortedData = [...sourceData].sort((a, b) => b.totalLeads - a.totalLeads);
+  // Bar colors for different metrics
+  const barColors = {
+    totalLeads: "#133C27",
+    qualifiedLeads: "#215B38",
+    bookings: "#C9A82C",
+    conversionRate: "#B8960F",
+  };
+
+  const visibleBars = activeMetric === "all"
+    ? [
+        { key: "totalLeads", label: "Total Leads", color: barColors.totalLeads },
+        { key: "qualifiedLeads", label: "Qualified Leads", color: barColors.qualifiedLeads },
+        { key: "bookings", label: "Bookings", color: barColors.bookings },
+      ]
+    : [
+        {
+          key: activeMetric,
+          label: METRIC_TABS.find(t => t.key === activeMetric)?.label || activeMetric,
+          color: barColors[activeMetric as keyof typeof barColors] || "#133C27",
+        },
+      ];
 
   return (
-    <div className="w-full h-full">
-      <div className="mb-1.5">
-        <h3 className="text-[#1A3C2A] text-sm font-bold">Source Performance</h3>
-        <p className="text-[#6B7283] text-[10px]">Which channels bring the best leads?</p>
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+        <div>
+          <h3 className="text-[#1A3C2A] text-sm font-bold">Source Performance</h3>
+          <p className="text-[#6B7283] text-[10px]">Lead quality & conversion by channel</p>
+        </div>
+        <div className="flex items-center gap-1">
+          {/* View toggle */}
+          <div className="flex bg-[#F1E9D4] rounded p-0.5">
+            <button
+              onClick={() => setViewMode("chart")}
+              className={`px-2 py-0.5 text-[9px] rounded ${viewMode === "chart" ? "bg-white shadow" : "text-[#6B7283]"}`}
+            >
+              Chart
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`px-2 py-0.5 text-[9px] rounded ${viewMode === "table" ? "bg-white shadow" : "text-[#6B7283]"}`}
+            >
+              Table
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* View Toggle */}
-      <div className="flex gap-1 mb-1.5">
-        <button
-          onClick={() => setViewMode("chart")}
-          className={`text-[9px] px-2 py-0.5 rounded border transition-colors ${viewMode === "chart"
-              ? "bg-[#133C27] border-[#133C27] text-white font-medium"
-              : "border-[#E8E2D6] text-[#6B7283] hover:text-[#1A3C2A] hover:bg-[#F1E9D4]"
-            }`}
-        >
-          Chart View
-        </button>
-        <button
-          onClick={() => setViewMode("table")}
-          className={`text-[9px] px-2 py-0.5 rounded border transition-colors ${viewMode === "table"
-              ? "bg-[#133C27] border-[#133C27] text-white font-medium"
-              : "border-[#E8E2D6] text-[#6B7283] hover:text-[#1A3C2A] hover:bg-[#F1E9D4]"
-            }`}
-        >
-          Table View
-        </button>
+      {/* Metric Tabs */}
+      <div className="flex flex-wrap gap-1 mb-2">
+        {METRIC_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveMetric(tab.key)}
+            className={`px-2.5 py-0.5 text-[9px] rounded-full transition-colors ${activeMetric === tab.key
+                ? "bg-[#133C27] text-white"
+                : "bg-[#F1E9D4] text-[#6B7283] hover:bg-[#E8E2D6]"
+              }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {viewMode === "chart" ? (
-        <>
-          {/* Metric Tabs */}
-          <div className="flex flex-wrap gap-1 mb-1.5">
-            {METRIC_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActive(tab.key)}
-                className={`text-[9px] px-2 py-0.5 rounded border transition-colors ${active === tab.key
-                    ? "bg-[#133C27] border-[#133C27] text-white font-medium"
-                    : "border-[#E8E2D6] text-[#6B7283] hover:text-[#1A3C2A] hover:bg-[#F1E9D4]"
-                  }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Legend */}
-          <div className="flex flex-wrap gap-2 mb-1.5">
-            {visibleBars.map((b) => (
-              <span key={b.key} className="flex items-center gap-1 text-[9px] text-[#6B7283]">
-                <span
-                  className="w-1.5 h-1.5 rounded-sm shrink-0"
-                  style={{ background: b.color }}
+        <div className="w-full h-[260px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={sortedData}
+              margin={{ top: 10, right: 10, left: 0, bottom: 30 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke={COLORS.borderColor} />
+              <XAxis
+                dataKey="name"
+                stroke={COLORS.textMuted}
+                tick={{ fontSize: 9 }}
+                angle={-45}
+                textAnchor="end"
+                height={30}
+              />
+              <YAxis stroke={COLORS.textMuted} tick={{ fontSize: 9 }} />
+              <Tooltip content={<ChartTooltip />} />
+              {visibleBars.map((b) => (
+                <Bar
+                  key={b.key}
+                  dataKey={b.key}
+                  name={b.label}
+                  fill={b.color}
+                  radius={[3, 3, 0, 0]}
                 />
-                {b.label}
-              </span>
-            ))}
-          </div>
-
-          {/* Chart */}
-          <div className="w-full h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={sourceData}
-                margin={{ top: 5, right: 10, left: 0, bottom: 30 }}
-                barCategoryGap="15%"
-                barGap={2}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.borderColor} vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  stroke={COLORS.textMuted}
-                  tick={{ fontSize: 9 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={30}
-                />
-                <YAxis stroke={COLORS.textMuted} tick={{ fontSize: 9 }} />
-                <Tooltip content={<ChartTooltip />} />
-                {visibleBars.map((b) => (
-                  <Bar
-                    key={b.key}
-                    dataKey={b.key}
-                    name={b.label}
-                    fill={b.color}
-                    radius={[3, 3, 0, 0]}
-                  />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </>
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       ) : (
         /* Table View */
         <div className="overflow-x-auto rounded border border-[#E8E2D6]">
