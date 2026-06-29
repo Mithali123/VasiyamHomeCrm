@@ -6,7 +6,6 @@ import {
   Users, 
   Building2, 
   Filter, 
-  Clock, 
   RotateCcw, 
   Save, 
   Download,
@@ -19,10 +18,20 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+
+// Properly typed filter state
+interface FilterState {
+  dateRange: string;
+  scope: string;
+  comparison: string;
+  filters?: Record<string, string | string[] | number>;
+}
 
 interface FilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onApplyFilters?: (filters: FilterState) => void;
 }
 
 const datePresets = [
@@ -44,15 +53,81 @@ const additionalFilters = [
   { id: "stage", label: "Lead Stage", icon: Target },
 ];
 
-export default function FilterDrawer({ isOpen, onClose }: FilterDrawerProps) {
+export default function FilterDrawer({ isOpen, onClose, onApplyFilters }: FilterDrawerProps) {
   const [activeDate, setActiveDate] = useState("Last 30 Days");
   const [activeScope, setActiveScope] = useState("all");
   const [comparison, setComparison] = useState("previous");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [savedViews, setSavedViews] = useState<string[]>([]);
+  const [filterCounts, setFilterCounts] = useState<Record<string, number>>({
+    project: 3,
+    rm: 2,
+    team_sel: 1,
+    source: 4,
+    campaign: 0,
+    stage: 3
+  });
+  const router = useRouter();
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 800);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      console.log("Data refreshed!");
+    }, 800);
+  };
+
+  const handleApplyFilters = () => {
+    const filters: FilterState = {
+      dateRange: activeDate,
+      scope: activeScope,
+      comparison: comparison,
+    };
+    
+    console.log("Applying filters:", filters);
+    onApplyFilters?.(filters);
+    onClose();
+  };
+
+  const handleResetFilters = () => {
+    setActiveDate("Last 30 Days");
+    setActiveScope("all");
+    setComparison("previous");
+    console.log("Filters reset to default");
+  };
+
+  const handleSaveView = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      const viewName = `View ${savedViews.length + 1}`;
+      setSavedViews([...savedViews, viewName]);
+      setIsSaving(false);
+      console.log(`View "${viewName}" saved!`);
+    }, 600);
+  };
+
+  const handleExportReport = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      console.log("Exporting dashboard report...");
+      const link = document.createElement('a');
+      link.href = '#';
+      link.download = `dashboard-report-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }, 1000);
+  };
+
+  const handleFilterClick = (filterId: string) => {
+    console.log(`Opening filter: ${filterId}`);
+    router.push(`/filters/${filterId}`);
+  };
+
+  const handleComparisonSelect = (type: string) => {
+    setComparison(type);
+    console.log(`Comparison set to: ${type}`);
   };
 
   return (
@@ -90,13 +165,14 @@ export default function FilterDrawer({ isOpen, onClose }: FilterDrawerProps) {
               <button 
                 onClick={onClose}
                 className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                aria-label="Close drawer"
               >
                 <X size={20} className="text-gray-500" />
               </button>
             </div>
 
             {/* CONTENT */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
               {/* DATE RANGE SECTION */}
               <section>
                 <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -128,7 +204,7 @@ export default function FilterDrawer({ isOpen, onClose }: FilterDrawerProps) {
                 </h3>
                 <div className="grid grid-cols-1 gap-2">
                   <button 
-                    onClick={() => setComparison("previous")}
+                    onClick={() => handleComparisonSelect("previous")}
                     className={cn(
                       "flex items-center justify-between p-3 rounded-xl border transition-all text-left",
                       comparison === "previous" ? "bg-primary/5 border-primary shadow-sm" : "bg-white border-gray-100 hover:bg-gray-50"
@@ -145,7 +221,7 @@ export default function FilterDrawer({ isOpen, onClose }: FilterDrawerProps) {
                     </div>
                   </button>
                   <button 
-                    onClick={() => setComparison("year")}
+                    onClick={() => handleComparisonSelect("year")}
                     className={cn(
                       "flex items-center justify-between p-3 rounded-xl border transition-all text-left",
                       comparison === "year" ? "bg-primary/5 border-primary shadow-sm" : "bg-white border-gray-100 hover:bg-gray-50"
@@ -203,6 +279,7 @@ export default function FilterDrawer({ isOpen, onClose }: FilterDrawerProps) {
                   {additionalFilters.map((f) => (
                     <button
                       key={f.id}
+                      onClick={() => handleFilterClick(f.id)}
                       className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors group"
                     >
                       <div className="flex items-center gap-3">
@@ -210,7 +287,12 @@ export default function FilterDrawer({ isOpen, onClose }: FilterDrawerProps) {
                         <span className="text-xs font-bold text-gray-600 group-hover:text-brand-text">{f.label}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black text-gray-400 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-tight">All Selected</span>
+                        <span className={cn(
+                          "text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-tight",
+                          filterCounts[f.id] > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"
+                        )}>
+                          {filterCounts[f.id] > 0 ? `${filterCounts[f.id]} Selected` : "All"}
+                        </span>
                         <ChevronRight size={14} className="text-gray-300 group-hover:text-primary transition-all group-hover:translate-x-0.5" />
                       </div>
                     </button>
@@ -223,17 +305,27 @@ export default function FilterDrawer({ isOpen, onClose }: FilterDrawerProps) {
             <div className="p-6 border-t border-gray-100 bg-gray-50/50 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <button 
-                  onClick={() => {
-                    setActiveDate("Last 30 Days");
-                    setActiveScope("all");
-                    setComparison("previous");
-                  }}
+                  onClick={handleResetFilters}
                   className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-white hover:border-gray-300 transition-all shadow-sm"
                 >
                   <RotateCcw size={14} /> Reset Filters
                 </button>
-                <button className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-white hover:border-gray-300 transition-all shadow-sm">
-                  <Save size={14} /> Save View
+                <button 
+                  onClick={handleSaveView}
+                  disabled={isSaving}
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-white hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.6, repeat: Infinity, ease: "linear" }}
+                    >
+                      <RefreshCw size={14} className="text-primary" />
+                    </motion.div>
+                  ) : (
+                    <Save size={14} />
+                  )}
+                  {isSaving ? "Saving..." : "Save View"}
                 </button>
               </div>
               
@@ -248,10 +340,10 @@ export default function FilterDrawer({ isOpen, onClose }: FilterDrawerProps) {
                   >
                     <RefreshCw size={14} className={cn(isRefreshing ? "text-primary" : "text-gray-400")} />
                   </motion.div>
-                  Refresh Data
+                  {isRefreshing ? "Refreshing..." : "Refresh Data"}
                 </button>
                 <button 
-                  onClick={onClose}
+                  onClick={handleApplyFilters}
                   className="flex-[2] py-4 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:opacity-95 active:scale-[0.98] transition-all"
                 >
                   Apply Filters
@@ -259,8 +351,26 @@ export default function FilterDrawer({ isOpen, onClose }: FilterDrawerProps) {
               </div>
 
               <div className="flex items-center justify-center pt-2">
-                <button className="flex items-center gap-2 text-[10px] font-black text-gray-400 hover:text-primary transition-colors uppercase tracking-widest">
-                  <Download size={14} /> Export Dashboard Report
+                <button 
+                  onClick={handleExportReport}
+                  disabled={isExporting}
+                  className="flex items-center gap-2 text-[10px] font-black text-gray-400 hover:text-primary transition-colors uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isExporting ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 0.6, repeat: Infinity, ease: "linear" }}
+                      >
+                        <RefreshCw size={14} />
+                      </motion.div>
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      <Download size={14} /> Export Dashboard Report
+                    </>
+                  )}
                 </button>
               </div>
             </div>

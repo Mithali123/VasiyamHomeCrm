@@ -13,6 +13,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { activities, insights, liveLeadStatus, recentLeads, repPerformance } from "@/mock/dashboard";
+import { useRouter } from "next/navigation";
 
 const tones: Record<string, { bg: string; text: string; line: string }> = {
   green: { bg: "bg-emerald-50", text: "text-emerald-700", line: "bg-emerald-600" },
@@ -32,11 +33,26 @@ const Title = ({ title, subtitle }: { title: string; subtitle: string }) => (
   </div>
 );
 
-const ViewAll = () => (
-  <button className="rounded-md border border-[#e6e8e9] px-3 py-2 text-[10px]">
-    View all
-  </button>
-);
+const ViewAll = ({ onClick, path }: { onClick?: () => void; path?: string }) => {
+  const router = useRouter();
+  
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (path) {
+      router.push(path);
+    }
+  };
+
+  return (
+    <button 
+      onClick={handleClick}
+      className="rounded-md border border-[#e6e8e9] px-3 py-2 text-[10px] hover:bg-gray-50 transition-colors"
+    >
+      View all
+    </button>
+  );
+};
 
 const Card = ({
   children,
@@ -73,11 +89,23 @@ const statusClass: Record<string, string> = {
 
 // Live Lead Status Widget
 export function LiveLeadStatus() {
+  const router = useRouter();
+
+  const handleViewAll = () => {
+    console.log("View all live lead status");
+    router.push("/leads");
+  };
+
+  const handleStatusClick = (status: string) => {
+    console.log(`Status clicked: ${status}`);
+    router.push(`/leads?status=${status}`);
+  };
+
   return (
     <Card className="h-full">
       <div className="mb-3 flex items-start justify-between">
         <Title title="Live Lead Status" subtitle="Real-time distribution of leads" />
-        <ViewAll />
+        <ViewAll onClick={handleViewAll} />
       </div>
 
       <div className="grid grid-cols-4 gap-x-3 gap-y-3">
@@ -86,7 +114,11 @@ export function LiveLeadStatus() {
           const tone = tones[item.tone];
 
           return (
-            <div key={item.label} className="min-w-0 border-b border-[#eef0f1] pb-2">
+            <div 
+              key={item.label} 
+              className="min-w-0 border-b border-[#eef0f1] pb-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+              onClick={() => handleStatusClick(item.label)}
+            >
               <div className="flex items-center gap-2">
                 <span
                   className={`flex h-7 w-7 items-center justify-center rounded-lg ${tone.bg} ${tone.text}`}
@@ -113,11 +145,23 @@ export function LiveLeadStatus() {
 
 // RM Performance Widget
 export function RMPerformance() {
+  const router = useRouter();
+
+  const handleViewAll = () => {
+    console.log("View all RM performance");
+    router.push("/rm");
+  };
+
+  const handleRMClick = (rmName: string) => {
+    console.log(`RM clicked: ${rmName}`);
+    router.push(`/rm/${rmName.toLowerCase().replace(" ", "-")}`);
+  };
+
   return (
     <Card className="h-full">
       <div className="mb-3 flex items-start justify-between">
         <Title title="RM Performance" subtitle="Top performing relationship managers" />
-        <ViewAll />
+        <ViewAll onClick={handleViewAll} />
       </div>
 
       <div className="grid grid-cols-[1.4fr_.55fr_.55fr_.5fr] border-b border-[#eef0f1] pb-2 text-[9px] uppercase text-[#858c90]">
@@ -130,7 +174,8 @@ export function RMPerformance() {
       {repPerformance.map((rep, index) => (
         <div
           key={rep.name}
-          className="grid h-8 grid-cols-[1.4fr_.55fr_.55fr_.5fr] items-center border-b border-[#f1f2f2] text-[10px] last:border-0"
+          className="grid h-8 grid-cols-[1.4fr_.55fr_.55fr_.5fr] items-center border-b border-[#f1f2f2] text-[10px] last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => handleRMClick(rep.name)}
         >
           <span className="flex items-center gap-2 font-medium">
             <i className="flex h-5 w-5 items-center justify-center rounded-full bg-[#e8eee9] text-[8px] text-[#174f3d]">
@@ -160,11 +205,29 @@ export function RMPerformance() {
 
 // Recent Leads Widget
 export function RecentLeads() {
+  const router = useRouter();
+
+  const handleViewAll = () => {
+    console.log("View all recent leads");
+    router.push("/leads");
+  };
+
+  const handleLeadClick = (leadName: string) => {
+    console.log(`Lead clicked: ${leadName}`);
+    router.push(`/leads/${leadName.toLowerCase().replace(" ", "-")}`);
+  };
+
+  const handleStatusClick = (status: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log(`Status clicked: ${status}`);
+    router.push(`/leads?status=${status}`);
+  };
+
   return (
     <Card className="h-full overflow-hidden">
       <div className="mb-3 flex items-start justify-between">
         <Title title="Recent Leads" subtitle="Latest leads added to the system" />
-        <ViewAll />
+        <ViewAll onClick={handleViewAll} />
       </div>
 
       <div className="w-full overflow-hidden">
@@ -180,7 +243,8 @@ export function RecentLeads() {
         {recentLeads.map((lead) => (
           <div
             key={lead.name}
-            className="grid min-h-[36px] grid-cols-[1fr_1.05fr_.78fr_1fr_.78fr_.65fr] items-center gap-x-2 border-b border-[#f1f2f2] text-[9px] last:border-0"
+            className="grid min-h-[36px] grid-cols-[1fr_1.05fr_.78fr_1fr_.78fr_.65fr] items-center gap-x-2 border-b border-[#f1f2f2] text-[9px] last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => handleLeadClick(lead.name)}
           >
             <b className="truncate">{lead.name}</b>
             <span className="truncate">{lead.project}</span>
@@ -188,7 +252,8 @@ export function RecentLeads() {
             <span className="truncate">{lead.rm}</span>
             <span>
               <i
-                className={`whitespace-nowrap rounded-full px-1.5 py-0.5 not-italic ${statusClass[lead.status]}`}
+                className={`whitespace-nowrap rounded-full px-1.5 py-0.5 not-italic ${statusClass[lead.status]} cursor-pointer hover:opacity-70 transition-opacity`}
+                onClick={(e) => handleStatusClick(lead.status, e)}
               >
                 {lead.status}
               </i>
@@ -205,6 +270,13 @@ export function RecentLeads() {
 
 // Business Insights Widget
 export function BusinessInsights() {
+  const router = useRouter();
+
+  const handleInsightClick = (insight: string) => {
+    console.log(`Insight clicked: ${insight}`);
+    router.push("/analytics/insights");
+  };
+
   return (
     <Card className="h-full">
       <div className="mb-3">
@@ -218,7 +290,8 @@ export function BusinessInsights() {
           return (
             <div
               key={item.title}
-              className="flex min-h-[62px] items-center rounded-lg border border-[#edf0f1] px-3"
+              className="flex min-h-[62px] items-center rounded-lg border border-[#edf0f1] px-3 cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => handleInsightClick(item.title)}
             >
               <span
                 className={`mr-2 flex h-7 w-7 items-center justify-center rounded-md ${tone.bg} ${tone.text}`}
@@ -245,11 +318,29 @@ export function BusinessInsights() {
 
 // Recent Activities Widget
 export function RecentActivities() {
+  const router = useRouter();
+
+  const handleViewAll = () => {
+    console.log("View all recent activities");
+    router.push("/activities");
+  };
+
+  const handleActivityClick = (activity: string) => {
+    console.log(`Activity clicked: ${activity}`);
+    router.push("/activities");
+  };
+
+  const handleBadgeClick = (badge: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log(`Badge clicked: ${badge}`);
+    router.push(`/activities?type=${badge.toLowerCase()}`);
+  };
+
   return (
     <Card className="h-full">
       <div className="mb-3 flex items-start justify-between">
         <Title title="Recent Activities" subtitle="Latest updates across your leads and team" />
-        <ViewAll />
+        <ViewAll onClick={handleViewAll} />
       </div>
 
       <div className="relative ml-1 space-y-0.5 before:absolute before:bottom-2 before:left-[3px] before:top-2 before:w-px before:bg-[#dfe3e4]">
@@ -259,7 +350,8 @@ export function RecentActivities() {
           return (
             <div
               key={`${item.time}-${item.title}`}
-              className="relative grid min-h-[43px] grid-cols-[66px_minmax(0,1fr)_auto] items-center gap-2 pl-4 text-[9px]"
+              className="relative grid min-h-[43px] grid-cols-[66px_minmax(0,1fr)_auto] items-center gap-2 pl-4 text-[9px] cursor-pointer hover:bg-gray-50 rounded-lg transition-colors"
+              onClick={() => handleActivityClick(item.title)}
             >
               <i
                 className={`absolute left-0 z-10 h-2 w-2 rounded-full border-2 border-white ${tone.line}`}
@@ -270,7 +362,8 @@ export function RecentActivities() {
                 <span className="block truncate text-[#5f666a]">{item.detail}</span>
               </span>
               <em
-                className={`whitespace-nowrap rounded px-1.5 py-1 text-[8px] not-italic ${tone.bg} ${tone.text}`}
+                className={`whitespace-nowrap rounded px-1.5 py-1 text-[8px] not-italic ${tone.bg} ${tone.text} cursor-pointer hover:opacity-70 transition-opacity`}
+                onClick={(e) => handleBadgeClick(item.badge, e)}
               >
                 {item.badge}
               </em>

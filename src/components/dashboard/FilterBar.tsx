@@ -12,7 +12,95 @@ const filters = [
   { label: "All Budgets", options: ["All Budgets", "Below ₹50L", "₹50L–₹1Cr", "₹1Cr–₹2Cr", "Above ₹2Cr"] },
 ];
 
-export default function FilterBar() {
+// Date range calculation function
+const getDateRange = (range: string) => {
+  const now = new Date(2026, 5, 29); // June 29, 2026
+  let startDate = new Date(now);
+  let endDate = new Date(now);
+
+  switch (range) {
+    case "Today":
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      break;
+    case "This Week": {
+      const dayOfWeek = now.getDay();
+      const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+      break;
+    }
+    case "This Month":
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      break;
+    case "This Quarter": {
+      const quarterMonth = Math.floor(now.getMonth() / 3) * 3;
+      startDate = new Date(now.getFullYear(), quarterMonth, 1);
+      endDate = new Date(now.getFullYear(), quarterMonth + 3, 0);
+      break;
+    }
+    case "This Year":
+      startDate = new Date(now.getFullYear(), 0, 1);
+      endDate = new Date(now.getFullYear(), 11, 31);
+      break;
+    default:
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  }
+
+  return { startDate, endDate };
+};
+
+// Get formatted date display
+const getDateRangeDisplay = (range: string) => {
+  const now = new Date(2026, 5, 29);
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  
+  const formatDate = (date: Date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month}`;
+  };
+
+  if (range === "Today") {
+    return `${formatDate(now)} ${now.getFullYear()}`;
+  } else if (range === "This Month") {
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return `${formatDate(start)} – ${formatDate(now)} ${now.getFullYear()}`;
+  } else if (range === "This Week") {
+    const dayOfWeek = now.getDay();
+    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    const start = new Date(now.getFullYear(), now.getMonth(), diff);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return `${formatDate(start)} – ${formatDate(end)} ${now.getFullYear()}`;
+  } else if (range === "This Quarter") {
+    const quarterMonth = Math.floor(now.getMonth() / 3) * 3;
+    const start = new Date(now.getFullYear(), quarterMonth, 1);
+    const end = new Date(now.getFullYear(), quarterMonth + 3, 0);
+    return `${formatDate(start)} – ${formatDate(end)} ${now.getFullYear()}`;
+  } else if (range === "This Year") {
+    const start = new Date(now.getFullYear(), 0, 1);
+    const end = new Date(now.getFullYear(), 11, 31);
+    return `${formatDate(start)} – ${formatDate(end)} ${now.getFullYear()}`;
+  }
+  
+  return `${formatDate(now)} ${now.getFullYear()}`;
+};
+
+interface FilterBarProps {
+  onFilterChange?: (filters: {
+    dateRange: string;
+    startDate: Date;
+    endDate: Date;
+    selectedFilters: string[];
+  }) => void;
+}
+
+export default function FilterBar({ onFilterChange }: FilterBarProps) {
   const [open, setOpen] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState("This Month");
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -29,6 +117,65 @@ export default function FilterBar() {
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
+  // Apply filters and notify parent
+  const applyFilters = () => {
+    const { startDate, endDate } = getDateRange(dateRange);
+    const filterData = {
+      dateRange,
+      startDate,
+      endDate,
+      selectedFilters: selected,
+    };
+    
+    console.log("Applying filters:", filterData);
+    
+    if (onFilterChange) {
+      onFilterChange(filterData);
+    }
+  };
+
+  // Handle date selection
+  const handleDateSelect = (option: string) => {
+    setDateRange(option);
+    setOpen(null);
+    // Apply filters immediately when date changes
+    setTimeout(() => applyFilters(), 100);
+  };
+
+  // Handle filter selection
+  const handleFilterSelect = (index: number, option: string) => {
+    const next = [...selected];
+    next[index] = option;
+    setSelected(next);
+    setOpen(null);
+    // Apply filters immediately when filter changes
+    setTimeout(() => applyFilters(), 100);
+  };
+
+  // Handle create lead
+  const handleCreateLead = () => {
+    console.log("Create lead clicked");
+    // Navigate to create lead page or open modal
+  };
+
+  // Handle import
+  const handleImport = () => {
+    console.log("Import clicked");
+    // Open import modal or navigate to import page
+  };
+
+  // Handle more filters
+  const handleMoreFilters = () => {
+    console.log("More filters clicked");
+    setDrawerOpen(true);
+  };
+
+  // Apply filters on drawer close
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+    applyFilters();
+  };
+
   return (
     <div
       ref={root}
@@ -38,7 +185,7 @@ export default function FilterBar() {
       <div className="relative">
         <button
           onClick={() => setOpen(open === -1 ? null : -1)}
-          className="flex h-10 min-w-[158px] items-center gap-2 rounded-lg border border-[#e6e7e8] px-3 text-left"
+          className="flex h-10 min-w-[158px] items-center gap-2 rounded-lg border border-[#e6e7e8] px-3 text-left hover:bg-gray-50 transition-colors"
         >
           <CalendarDays size={16} className="text-[#202426]" />
           <span className="min-w-0 flex-1">
@@ -46,7 +193,7 @@ export default function FilterBar() {
               {dateRange}
             </span>
             <span className="block text-[8px] text-[#777e83]">
-              01 May – 31 May 2026
+              {getDateRangeDisplay(dateRange)}
             </span>
           </span>
           <ChevronDown size={12} className={open === -1 ? "rotate-180" : ""} />
@@ -57,11 +204,8 @@ export default function FilterBar() {
             {["Today", "This Week", "This Month", "This Quarter", "This Year"].map((option) => (
               <button
                 key={option}
-                onClick={() => {
-                  setDateRange(option);
-                  setOpen(null);
-                }}
-                className="block w-full rounded-md px-3 py-2.5 text-left text-[11px] hover:bg-[#f3f7f5]"
+                onClick={() => handleDateSelect(option)}
+                className="block w-full rounded-md px-3 py-2.5 text-left text-[11px] hover:bg-[#f3f7f5] transition-colors"
               >
                 {option}
               </button>
@@ -77,7 +221,7 @@ export default function FilterBar() {
         <div key={filter.label} className="relative">
           <button
             onClick={() => setOpen(open === index ? null : index)}
-            className="flex h-10 min-w-[118px] items-center justify-between gap-3 rounded-lg border border-[#e6e7e8] px-3 text-[10px] font-medium text-[#303537]"
+            className="flex h-10 min-w-[118px] items-center justify-between gap-3 rounded-lg border border-[#e6e7e8] px-3 text-[10px] font-medium text-[#303537] hover:bg-gray-50 transition-colors"
           >
             {selected[index]}
             <ChevronDown size={11} className={open === index ? "rotate-180" : ""} />
@@ -88,13 +232,8 @@ export default function FilterBar() {
               {filter.options.map((option) => (
                 <button
                   key={option}
-                  onClick={() => {
-                    const next = [...selected];
-                    next[index] = option;
-                    setSelected(next);
-                    setOpen(null);
-                  }}
-                  className="block w-full rounded-md px-3 py-2.5 text-left text-[11px] hover:bg-[#f3f7f5]"
+                  onClick={() => handleFilterSelect(index, option)}
+                  className="block w-full rounded-md px-3 py-2.5 text-left text-[11px] hover:bg-[#f3f7f5] transition-colors"
                 >
                   {option}
                 </button>
@@ -106,8 +245,8 @@ export default function FilterBar() {
 
       {/* More Filters */}
       <button
-        onClick={() => setDrawerOpen(true)}
-        className="flex h-10 items-center gap-2 rounded-lg border border-[#e6e7e8] px-3 text-[10px] font-medium"
+        onClick={handleMoreFilters}
+        className="flex h-10 items-center gap-2 rounded-lg border border-[#e6e7e8] px-3 text-[10px] font-medium hover:bg-gray-50 transition-colors"
       >
         <Filter size={13} /> More Filters
       </button>
@@ -115,15 +254,24 @@ export default function FilterBar() {
       <div className="min-w-2 flex-1" />
 
       {/* Action Buttons */}
-      <button className="flex h-10 items-center gap-2 rounded-lg bg-[#eef6f1] px-3 text-[10px] font-semibold text-[#07543d]">
+      <button 
+        onClick={handleCreateLead}
+        className="flex h-10 items-center gap-2 rounded-lg bg-[#eef6f1] px-3 text-[10px] font-semibold text-[#07543d] hover:bg-[#dcece3] transition-colors"
+      >
         <Plus size={13} /> Create Lead
       </button>
 
-      <button className="flex h-10 items-center gap-2 rounded-lg border border-[#e6e7e8] px-3 text-[10px] font-medium">
+      <button 
+        onClick={handleImport}
+        className="flex h-10 items-center gap-2 rounded-lg border border-[#e6e7e8] px-3 text-[10px] font-medium hover:bg-gray-50 transition-colors"
+      >
         <Download size={13} /> Import
       </button>
 
-      <FilterDrawer isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <FilterDrawer 
+        isOpen={drawerOpen} 
+        onClose={handleDrawerClose} 
+      />
     </div>
   );
 }
