@@ -1,8 +1,9 @@
 "use client";
 
-import { CalendarDays, ChevronDown, Download, Filter, Plus } from "lucide-react";
+import { CalendarDays, ChevronDown, Download, Filter, Plus, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import FilterDrawer from "./FilterDrawer";
+import { motion, AnimatePresence } from "framer-motion";
 
 const filters = [
   { label: "All Projects", options: ["All Projects", "Vasiyam Greens", "Vasiyam Hills", "Vasiyam Heights"] },
@@ -18,6 +19,10 @@ export default function FilterBar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState(filters.map((item) => item.label));
   const root = useRef<HTMLDivElement>(null);
+
+  const isAnyFilterActive =
+    selected.some((val, idx) => val !== filters[idx].label) ||
+    dateRange !== "This Month";
 
   useEffect(() => {
     const close = (event: MouseEvent) => {
@@ -111,6 +116,26 @@ export default function FilterBar() {
       >
         <Filter size={13} /> More Filters
       </button>
+
+      {/* Clear Filters Button */}
+      <AnimatePresence>
+        {isAnyFilterActive && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9, x: -10 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            exit={{ opacity: 0, scale: 0.9, x: -10 }}
+            transition={{ duration: 0.15 }}
+            onClick={() => {
+              setSelected(filters.map((item) => item.label));
+              setDateRange("This Month");
+            }}
+            className="flex h-10 items-center gap-1.5 px-2 text-[10px] font-semibold text-[#475569] hover:text-[#0f172a] hover:bg-slate-50 rounded-lg transition-all cursor-pointer"
+          >
+            <RotateCcw size={12} className="text-[#64748b]" />
+            Clear
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <div className="min-w-2 flex-1" />
 
