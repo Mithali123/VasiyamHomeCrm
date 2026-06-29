@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Sector, Tooltip, XAxis, YAxis } from "recharts";
 import { Award, CalendarDays, TrendingUp, Users } from "lucide-react";
 import { funnelStages, leadSources, leadTrendData } from "@/mock/dashboard";
-import { useRouter } from "next/navigation";
 
 // Helper Components
 const CardTitle = ({
@@ -29,23 +28,6 @@ const CardTitle = ({
 
 // Sales Funnel Widget
 export function SalesFunnel() {
-  const router = useRouter();
-  const [funnelPeriod, setFunnelPeriod] = useState("This Month");
-
-  const handleFunnelPeriodChange = () => {
-    // Cycle through periods
-    const periods = ["This Month", "Last Month", "This Quarter", "This Year"];
-    const currentIndex = periods.indexOf(funnelPeriod);
-    const nextIndex = (currentIndex + 1) % periods.length;
-    setFunnelPeriod(periods[nextIndex]);
-    console.log(`Funnel period changed to: ${periods[nextIndex]}`);
-  };
-
-  const handleConversionClick = () => {
-    console.log("Opening conversion details...");
-    router.push("/analytics/conversion");
-  };
-
   return (
     <section className="h-full rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)]">
       <CardTitle
@@ -61,41 +43,33 @@ export function SalesFunnel() {
         }
       />
 
-      <div className="grid grid-cols-[170px_1fr] gap-4">
+      <div className="grid grid-cols-[280px_1fr] gap-4">
         {/* Funnel Visualization */}
         <div className="flex h-[195px] flex-col items-center justify-center gap-[2px]">
           {funnelStages.map((item) => (
             <div
               key={item.name}
               style={{ width: `${item.width}%`, backgroundColor: item.color }}
-              className="h-[22px] rounded-[2px] cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-[22px] rounded-[2px]"
               aria-label={`${item.name}: ${item.leads}`}
-              onClick={() => {
-                console.log(`Clicked on ${item.name} stage`);
-                router.push(`/leads?stage=${item.name}`);
-              }}
             />
           ))}
         </div>
 
         {/* Funnel Data Table */}
         <div>
-          <div className="grid grid-cols-[1.35fr_.6fr_.7fr_.7fr_.55fr] border-b border-[#edf0f1] pb-2 text-[7px] uppercase text-[#858c91]">
+          <div className="grid grid-cols-[1.1fr_.55fr_.6fr_.65fr_.6fr] gap-x-2 border-b border-[#edf0f1] pb-2 text-[7px] uppercase text-[#858c91]">
             <span>Stage</span>
             <span className="text-right">Leads</span>
-            <span className="text-right">Conv. %</span>
-            <span className="text-right">Drop-off %</span>
+            <span className="text-right">Conv %</span>
+            <span className="text-right">Drop %</span>
             <span className="text-right">Stage %</span>
           </div>
 
           {funnelStages.map((item) => (
             <div
               key={item.name}
-              className="grid h-[24px] grid-cols-[1.35fr_.6fr_.7fr_.7fr_.55fr] items-center border-b border-[#f0f1f2] text-[8px] last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => {
-                console.log(`Viewing details for ${item.name}`);
-                router.push(`/leads?stage=${item.name}`);
-              }}
+              className="grid h-[24px] grid-cols-[1.35fr_.6fr_.7fr_.7fr_.55fr] items-center border-b border-[#f0f1f2] text-[8px] last:border-0"
             >
               <span className="flex items-center gap-2 font-medium">
                 <i className="h-1.5 w-1.5 rounded-full" style={{ background: item.color }} />
@@ -106,7 +80,7 @@ export function SalesFunnel() {
               <span
                 className={
                   item.dropOff !== "—"
-                    ? "text-right text-red-500"
+                    ? "text-right text-red-500 font-medium"
                     : "text-right text-[#8b9195]"
                 }
               >
@@ -300,23 +274,6 @@ export function LeadTrend() {
 
 // Lead Sources Widget
 export function LeadSources() {
-  const router = useRouter();
-
-  const handleViewAll = () => {
-    console.log("View all lead sources clicked");
-    router.push("/analytics/sources");
-  };
-
-  const handleSourceClick = (sourceName: string) => {
-    console.log(`Source clicked: ${sourceName}`);
-    router.push(`/leads?source=${sourceName}`);
-  };
-
-  const handleTotalLeadsClick = () => {
-    console.log("Total leads clicked");
-    router.push("/leads");
-  };
-
   return (
     <section className="h-full rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)]">
       <CardTitle
@@ -338,6 +295,10 @@ export function LeadSources() {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
+                {...({
+                  activeIndex,
+                  activeShape: renderActiveShape,
+                } as any)}
                 data={leadSources}
                 dataKey="value"
                 innerRadius={39}
@@ -347,22 +308,14 @@ export function LeadSources() {
                 strokeWidth={1}
               >
                 {leadSources.map((item) => (
-                  <Cell 
-                    key={item.name} 
-                    fill={item.color}
-                    className="cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => handleSourceClick(item.name)}
-                  />
+                  <Cell key={item.name} fill={item.color} />
                 ))}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
 
-          {/* Center Text - Clickable */}
-          <div 
-            className="pointer-events-auto absolute inset-0 flex cursor-pointer flex-col items-center justify-center hover:bg-gray-50/50 rounded-full transition-colors"
-            onClick={handleTotalLeadsClick}
-          >
+          {/* Center Text */}
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             <b className="text-[15px]">4,128</b>
             <span className="text-[7px] text-[#777e82]">Total Leads</span>
           </div>
@@ -370,11 +323,10 @@ export function LeadSources() {
 
         {/* Source List - Clickable */}
         <div className="min-w-0 flex-1 space-y-1.5">
-          {leadSources.map((item) => (
+          {leadSources.map((item, index) => (
             <div
               key={item.name}
-              className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[8px] cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors"
-              onClick={() => handleSourceClick(item.name)}
+              className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[8px]"
             >
               <span className="truncate">
                 <i

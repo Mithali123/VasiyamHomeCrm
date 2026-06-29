@@ -14,46 +14,6 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-// Geometric gold logo vector icon
-const VasiyamLogoSVG = () => (
-  <svg
-    width="28"
-    height="28"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="shrink-0"
-  >
-    <path
-      d="M12 2L3 11L12 20L21 11L12 2Z"
-      stroke="#C59A2C"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M12 2V20"
-      stroke="#C59A2C"
-      strokeWidth="1.5"
-    />
-    <path
-      d="M3 11H21"
-      stroke="#C59A2C"
-      strokeWidth="1.5"
-    />
-    <path
-      d="M8 7L16 15"
-      stroke="#C59A2C"
-      strokeWidth="1"
-    />
-    <path
-      d="M16 7L8 15"
-      stroke="#C59A2C"
-      strokeWidth="1"
-    />
-  </svg>
-);
-
 const items = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Lead Management", icon: Users, href: "/dashboard/leads" },
@@ -88,9 +48,17 @@ export default function Sidebar() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center gap-2.5 whitespace-nowrap overflow-hidden"
+              className="flex items-center gap-2.5 whitespace-nowrap overflow-hidden py-0.5"
             >
-              <VasiyamLogoSVG />
+              {/* Cropped pyramid icon from logo.png */}
+              <div className="w-8 h-[20px] overflow-hidden flex items-start justify-center shrink-0">
+                <img
+                  src="/logo.png"
+                  alt="Vasiyam Logo"
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+              {/* Branding text on the right */}
               <div className="flex flex-col text-left leading-[1.1]">
                 <span className="text-[12px] font-black text-[#C59A2C] tracking-wider uppercase">
                   VASIYAM HOMES
@@ -105,10 +73,14 @@ export default function Sidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="mx-auto cursor-pointer"
+              className="mx-auto cursor-pointer w-8 h-[20px] overflow-hidden flex items-start justify-center"
               onClick={() => setCollapsed(false)}
             >
-              <VasiyamLogoSVG />
+              <img
+                src="/logo.png"
+                alt="Vasiyam Homes"
+                className="w-full h-auto object-contain"
+              />
             </motion.div>
           )}
         </AnimatePresence>

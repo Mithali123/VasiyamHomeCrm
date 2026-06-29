@@ -231,7 +231,7 @@ export function RecentLeads() {
       </div>
 
       <div className="w-full overflow-hidden">
-        <div className="grid grid-cols-[1fr_1.05fr_.78fr_1fr_.78fr_.65fr] gap-x-2 border-b border-[#eef0f1] pb-2 text-[8px] uppercase text-[#858c90]">
+        <div className="grid grid-cols-[1fr_1fr_0.8fr_1fr_1.1fr_0.75fr] gap-x-3 border-b border-[#eef0f1] pb-2 text-[8px] uppercase text-[#858c90]">
           <span>Lead</span>
           <span>Project</span>
           <span>Source</span>
@@ -243,8 +243,7 @@ export function RecentLeads() {
         {recentLeads.map((lead) => (
           <div
             key={lead.name}
-            className="grid min-h-[36px] grid-cols-[1fr_1.05fr_.78fr_1fr_.78fr_.65fr] items-center gap-x-2 border-b border-[#f1f2f2] text-[9px] last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-            onClick={() => handleLeadClick(lead.name)}
+            className="grid min-h-[36px] grid-cols-[1fr_1.05fr_.78fr_1fr_.78fr_.65fr] items-center gap-x-2 border-b border-[#f1f2f2] text-[9px] last:border-0"
           >
             <b className="truncate">{lead.name}</b>
             <span className="truncate">{lead.project}</span>
