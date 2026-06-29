@@ -3,18 +3,19 @@
 import { 
   Search, 
   Bell, 
-  RefreshCw, 
   User, 
   ChevronDown,
   Command,
   LogOut,
   Settings,
   UserCircle,
-  Mail,
+  HelpCircle,
+  Star,
   CheckCircle2,
   Clock
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +26,9 @@ const notifications = [
 ];
 
 export default function Header() {
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const pathname = usePathname();
+  const isLeadsPage = pathname === "/dashboard/leads";
+  
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   
@@ -45,57 +48,59 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1000);
-  };
-
   return (
-    <header className="h-16 border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold text-primary tracking-tight">Dashboard</h1>
+    <header className="h-16 border-b border-gray-200 bg-white sticky top-0 z-30 px-6 flex items-center justify-between select-none">
+      <div className="flex items-center gap-4 flex-1">
+        {/* Dynamic Page Title & Subtitle based on Route */}
+        {isLeadsPage ? (
+          <div className="flex flex-col text-left">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-black text-[#1F1F1F] tracking-tight">Lead Management</h1>
+              <button className="text-gray-400 hover:text-amber-500 transition-colors">
+                <Star size={14} className="stroke-[1.5]" />
+              </button>
+            </div>
+            <p className="text-[10px] text-gray-500 font-medium">
+              Manage, track and convert leads into happy customers.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col text-left">
+            <h1 className="text-lg font-black text-[#1F1F1F] tracking-tight">Dashboard</h1>
+            <p className="text-[10px] text-gray-500 font-medium">Overview of your business performance.</p>
+          </div>
+        )}
         
-        {/* GLOBAL SEARCH */}
-        <div className="hidden md:flex items-center bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200 focus-within:border-primary/40 focus-within:bg-white transition-all w-80 group">
-          <Search size={16} className="text-gray-400 group-focus-within:text-primary transition-colors" />
+        {/* GLOBAL SEARCH INPUT (Centered or Left-align space) */}
+        <div className="hidden lg:flex items-center bg-[#F8F5EE] px-3.5 py-2 rounded-xl border border-gray-200/60 focus-within:border-primary/45 focus-within:bg-white transition-all w-[380px] group ml-6">
+          <Search size={14} className="text-gray-400 group-focus-within:text-primary transition-colors shrink-0" />
           <input 
             type="text" 
-            placeholder="Search leads, customers, projects..." 
-            className="bg-transparent border-none focus:ring-0 text-sm w-full ml-2 placeholder:text-gray-400 text-brand-text"
+            placeholder="Search by name, phone, email, lead ID or project" 
+            className="bg-transparent border-none focus:outline-none text-[11px] w-full ml-2.5 placeholder:text-gray-400 text-brand-text font-medium"
           />
-          <div className="flex items-center gap-1 bg-gray-200 px-1.5 py-0.5 rounded text-[10px] text-gray-500 font-medium">
-            <Command size={10} />
+          <div className="flex items-center gap-0.5 bg-gray-200/70 px-1 py-0.5 rounded text-[8px] text-gray-500 font-bold shrink-0">
+            <Command size={8} />
             <span>K</span>
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
-        {/* REFRESH */}
-        <button 
-          onClick={handleRefresh}
-          className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors relative"
-          title="Refresh Dashboard"
-        >
-          <motion.div
-            animate={{ rotate: isRefreshing ? 360 : 0 }}
-            transition={{ duration: 0.5, repeat: isRefreshing ? Infinity : 0, ease: "linear" }}
-          >
-            <RefreshCw size={18} />
-          </motion.div>
-        </button>
-
-        {/* NOTIFICATIONS */}
+        {/* NOTIFICATIONS BELL */}
         <div className="relative" ref={notificationRef}>
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
             className={cn(
-              "p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors relative",
-              showNotifications && "bg-gray-100 text-primary"
+              "p-2 text-gray-500 hover:bg-[#F8F5EE] rounded-full transition-colors relative",
+              showNotifications && "bg-[#F8F5EE] text-primary"
             )}
           >
-            <Bell size={18} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+            <Bell size={18} className="stroke-[1.5]" />
+            {/* Circular badge count - matches screenshot badge "8" */}
+            <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full border border-white text-[8px] font-black text-white flex items-center justify-center">
+              8
+            </span>
           </button>
 
           <AnimatePresence>
@@ -104,24 +109,21 @@ export default function Header() {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute right-0 mt-2 w-80 bg-white rounded-2xl border border-gray-100 shadow-2xl z-50 overflow-hidden"
+                className="absolute right-0 mt-2 w-80 bg-white rounded-2xl border border-gray-150 shadow-2xl z-50 overflow-hidden"
               >
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-brand-text">Notifications</h3>
-                  <button className="text-[10px] font-bold text-primary hover:underline">Mark all as read</button>
+                  <h3 className="font-bold text-xs text-brand-text">Notifications</h3>
+                  <button className="text-[9px] font-black text-primary hover:underline">Mark all as read</button>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto">
                   {notifications.map((n) => (
                     <div key={n.id} className="p-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer group">
                       <div className="flex gap-3">
-                        <div className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
-                          n.id === 2 ? "bg-red-50 text-red-500" : "bg-primary/10 text-primary"
-                        )}>
-                          {n.id === 2 ? <Clock size={14} /> : <CheckCircle2 size={14} />}
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-primary/10 text-primary">
+                          {n.id === 2 ? <Clock size={13} /> : <CheckCircle2 size={13} />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={cn("text-xs font-bold leading-none", n.unread ? "text-brand-text" : "text-gray-500")}>{n.title}</p>
+                          <p className="text-xs font-bold text-brand-text truncate leading-none">{n.title}</p>
                           <p className="text-[10px] text-gray-400 mt-1 line-clamp-1">{n.desc}</p>
                           <p className="text-[9px] text-gray-500 mt-1.5">{n.time}</p>
                         </div>
@@ -130,7 +132,7 @@ export default function Header() {
                     </div>
                   ))}
                 </div>
-                <button className="w-full p-3 text-center text-[10px] font-bold text-gray-400 hover:text-primary transition-colors border-t border-gray-100 bg-gray-50/50">
+                <button className="w-full p-3 text-center text-[9px] font-black text-gray-400 hover:text-primary transition-colors border-t border-gray-100 bg-gray-50/50">
                   View All Notifications
                 </button>
               </motion.div>
@@ -138,23 +140,30 @@ export default function Header() {
           </AnimatePresence>
         </div>
 
-        <div className="h-8 w-px bg-gray-200 mx-1" />
+        {/* HELP ICON */}
+        <button 
+          className="p-2 text-gray-500 hover:bg-[#F8F5EE] rounded-full transition-colors"
+          title="Help & Documentation"
+        >
+          <HelpCircle size={18} className="stroke-[1.5]" />
+        </button>
 
-        {/* USER PROFILE */}
+        <div className="h-6 w-px bg-gray-200 mx-1" />
+
+        {/* PROFILE DROP-DOWN */}
         <div className="relative" ref={profileRef}>
           <button 
             onClick={() => setShowProfile(!showProfile)}
             className={cn(
-              "flex items-center gap-2 pl-2 pr-1 py-1 hover:bg-gray-100 rounded-full transition-colors group",
-              showProfile && "bg-gray-100"
+              "flex items-center gap-2 pl-2 pr-1 py-1 hover:bg-[#F8F5EE] rounded-full transition-colors group",
+              showProfile && "bg-[#F8F5EE]"
             )}
           >
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 overflow-hidden">
-              <User size={18} />
+            <div className="w-8 h-8 rounded-full bg-[#0D2E1D] flex items-center justify-center text-white font-black text-xs">
+              SA
             </div>
             <div className="hidden sm:block text-left">
-              <p className="text-xs font-semibold text-brand-text leading-tight">Admin User</p>
-              <p className="text-[10px] text-gray-500">Super Admin</p>
+              <p className="text-xs font-bold text-brand-text leading-tight">Super Admin</p>
             </div>
             <ChevronDown size={14} className={cn("text-gray-400 group-hover:text-primary transition-all", showProfile && "rotate-180")} />
           </button>
@@ -165,27 +174,27 @@ export default function Header() {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-gray-100 shadow-2xl z-50 overflow-hidden"
+                className="absolute right-0 mt-2 w-52 bg-white rounded-2xl border border-gray-150 shadow-2xl z-50 overflow-hidden"
               >
                 <div className="p-4 bg-gray-50/50 border-b border-gray-100">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Signed in as</p>
-                  <p className="text-sm font-bold text-brand-text truncate">admin@vasiyam.com</p>
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Signed in as</p>
+                  <p className="text-xs font-bold text-brand-text truncate">superadmin@vasiyam.com</p>
                 </div>
                 <div className="p-2">
-                  <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-600 hover:bg-primary/5 hover:text-primary rounded-xl transition-all">
-                    <UserCircle size={16} /> My Profile
+                  <button className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-gray-600 hover:bg-primary/5 hover:text-primary rounded-xl transition-all">
+                    <UserCircle size={15} /> My Profile
                   </button>
-                  <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-600 hover:bg-primary/5 hover:text-primary rounded-xl transition-all border-b border-gray-50 pb-3 mb-1">
-                    <Settings size={16} /> Account Settings
+                  <button className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-gray-600 hover:bg-primary/5 hover:text-primary rounded-xl transition-all border-b border-gray-50 pb-3 mb-1">
+                    <Settings size={15} /> Account Settings
                   </button>
                   <button 
                     onClick={() => {
                       alert("Logging out...");
                       window.location.reload();
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all"
                   >
-                    <LogOut size={16} /> Sign Out
+                    <LogOut size={15} /> Sign Out
                   </button>
                 </div>
               </motion.div>

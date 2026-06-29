@@ -91,6 +91,8 @@ export const repPerformance = [
   { name: "Meera Nair", activities: 55, visits: 14, bookings: 3, rate: "5.5%" },
   { name: "Divya Sharma", activities: 42, visits: 8, bookings: 2, rate: "4.8%" },
   { name: "Suresh Pillai", activities: 48, visits: 12, bookings: 2, rate: "4.2%" },
+  { name: "Kiran Ramachandran", activities: 36, visits: 9, bookings: 1, rate: "2.8%" },
+  { name: "Rajesh Kannan", activities: 32, visits: 7, bookings: 1, rate: "3.1%" },
 ];
 
 export const activityTimeline = [
