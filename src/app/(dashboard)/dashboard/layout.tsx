@@ -3,21 +3,19 @@
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 
-export default function DashboardLayout({
-  children,
-}: {
+interface DashboardLayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen bg-brand-bg text-brand-text overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-[#f8faf9] text-[#171b1c]">
       <Sidebar />
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
-          <div className="py-6">
-            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8">
-              {children}
-            </div>
+        <main className="relative flex-1 overflow-y-auto focus:outline-none">
+          <div className="mx-auto w-full max-w-[1680px] px-4 py-3 xl:px-5">
+            {children}
           </div>
         </main>
       </div>

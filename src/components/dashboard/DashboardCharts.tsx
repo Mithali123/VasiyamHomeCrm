@@ -1,523 +1,291 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  Cell,
-} from "recharts";
+"use client";
+
 import { useState } from "react";
-import { Filter, Trophy } from "lucide-react";
+import { Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Award, CalendarDays, TrendingUp, Users } from "lucide-react";
+import { funnelStages, leadSources, leadTrendData } from "@/mock/dashboard";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type TooltipItem = {
-  color?: string;
-  fill?: string;
-  name?: string;
-  value?: string | number;
-  unit?: string;
-  payload?: { fill?: string; unit?: string };
-};
+// Helper Components
+const CardTitle = ({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle: string;
+  action?: React.ReactNode;
+}) => (
+  <div className="mb-3 flex items-start justify-between gap-3">
+    <div>
+      <h2 className="text-[12px] font-bold uppercase tracking-[-.01em] text-[#15191a]">
+        {title}
+      </h2>
+      <p className="mt-0.5 text-[8px] text-[#788085]">{subtitle}</p>
+    </div>
+    {action}
+  </div>
+);
 
-type ChartTooltipProps = {
-  active?: boolean;
-  payload?: TooltipItem[];
-  label?: string;
-};
-
-type FunnelStage = {
-  name: string;
-  count: number;
-  conversion: string;
-  dropOff: string;
-  stagePercent: string;
-  color: string;
-  topWidth: number;
-  bottomWidth: number;
-  isLast?: boolean;
-};
-type TrendData = { date: string; leads: number; conversions: number; bookings: number };
-type SourceData = {
-  name: string;
-  totalLeads: number;
-  qualifiedLeads: number;
-  bookings: number;
-  conversionRate: number;
-};
-
-// ─── Theme Colors (Brand Color System) ───────────────────────────────────────
-const COLORS = {
-  primaryGreen: "#133C27",
-  darkGreen: "#0d2e1d",
-  mutedGreen: "#215B38",
-  royalGold: "#C9A82C",
-  premiumGold: "#B8960F",
-  warmCream: "#F8F5EE",
-  pureWhite: "#FFFFFF",
-  secondaryBg: "#F1E9D4",
-  borderColor: "#E8E2D6",
-  textPrimary: "#1A3C2A",
-  textSecondary: "#6B7283",
-  textMuted: "#9AA1A9",
-  btnSecondaryBorder: "#D8CFB9",
-  // Charts & Funnel
-  chartLeadTrend: "#133C27",
-  chartConversion: "#C9A82C",
-  chartBookings: "#215B38",
-  chartGrid: "#E8E2D6",
-  funnelStart: "#133C27",
-  funnelEnd: "#215B38",
-  funnelLost: "#9AA1A9",
-};
-
-// ─── Shared Tooltip ───────────────────────────────────────────────────────────
-const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
-  if (!active || !payload?.length) return null;
+// Sales Funnel Widget
+export function SalesFunnel() {
   return (
-    <div className="bg-[#0d2e1d] border border-[#C9A82C]/20 p-2 rounded-xl shadow-lg">
-      {label && (
-        <p className="text-[#F8F5EE] text-[10px] font-bold mb-1 border-b border-[#C9A82C]/10 pb-1">
-          {label}
-        </p>
-      )}
-      {payload.map((item, i) => (
-        <div key={i} className="flex items-center gap-1.5 mb-0.5 last:mb-0">
-          <span
-            className="w-1.5 h-1.5 rounded-full shrink-0"
-            style={{ background: item.color || item.fill || item.payload?.fill }}
-          />
-          <span className="text-[#D8CFB9] text-[9px] flex-1">{item.name}</span>
-          <span className="text-[#F8F5EE] text-[9px] font-bold">
-            {item.value}
-            {item.unit || item.payload?.unit || ""}
-          </span>
+    <section className="h-full rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)]">
+      <CardTitle
+        title="Sales Funnel"
+        subtitle="Track performance across the sales pipeline"
+        action={
+          <button className="flex h-7 items-center gap-2 rounded-md border border-[#e6e8e9] px-3 text-[8px] font-medium">
+            <CalendarDays size={10} /> This Month
+          </button>
+        }
+      />
+
+      <div className="grid grid-cols-[170px_1fr] gap-4">
+        {/* Funnel Visualization */}
+        <div className="flex h-[195px] flex-col items-center justify-center gap-[2px]">
+          {funnelStages.map((item) => (
+            <div
+              key={item.name}
+              style={{ width: `${item.width}%`, backgroundColor: item.color }}
+              className="h-[22px] rounded-[2px]"
+              aria-label={`${item.name}: ${item.leads}`}
+            />
+          ))}
         </div>
-      ))}
-    </div>
-  );
-};
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-const funnelStages: FunnelStage[] = [
-  { name: "New Leads", count: 1248, conversion: "100%", dropOff: "—", stagePercent: "100%", color: "#7D1F1D", topWidth: 46, bottomWidth: 36 },
-  { name: "Contacted", count: 842, conversion: "67.4%", dropOff: "32.6%", stagePercent: "67.4%", color: "#A82E2B", topWidth: 36, bottomWidth: 28 },
-  { name: "Qualified", count: 512, conversion: "40.9%", dropOff: "26.5%", stagePercent: "40.9%", color: "#D26929", topWidth: 28, bottomWidth: 22 },
-  { name: "Site Visit", count: 256, conversion: "20.5%", dropOff: "20.4%", stagePercent: "20.5%", color: "#D99B26", topWidth: 22, bottomWidth: 17 },
-  { name: "Negotiation", count: 189, conversion: "15.1%", dropOff: "5.4%", stagePercent: "15.1%", color: "#A18A32", topWidth: 17, bottomWidth: 13 },
-  { name: "Won", count: 156, conversion: "12.5%", dropOff: "2.6%", stagePercent: "12.5%", color: "#6C8341", topWidth: 13, bottomWidth: 10 },
-  { name: "Lost", count: 98, conversion: "—", dropOff: "—", stagePercent: "—", color: "#1D5C39", topWidth: 10, bottomWidth: 10, isLast: true },
-];
-
-const leadTrendData: TrendData[] = [
-  { date: "Jan", leads: 120, conversions: 30, bookings: 15 },
-  { date: "Feb", leads: 150, conversions: 40, bookings: 22 },
-  { date: "Mar", leads: 180, conversions: 55, bookings: 28 },
-  { date: "Apr", leads: 220, conversions: 70, bookings: 35 },
-  { date: "May", leads: 280, conversions: 85, bookings: 42 },
-  { date: "Jun", leads: 310, conversions: 95, bookings: 50 },
-];
-
-// ─── Source Performance Data ────────────────────────────────────────────────
-const sourceData: SourceData[] = [
-  { name: "Website", totalLeads: 420, qualifiedLeads: 210, bookings: 85, conversionRate: 20.2 },
-  { name: "Chatbot", totalLeads: 180, qualifiedLeads: 95, bookings: 42, conversionRate: 23.3 },
-  { name: "Referral", totalLeads: 150, qualifiedLeads: 85, bookings: 38, conversionRate: 25.3 },
-  { name: "Facebook Ads", totalLeads: 320, qualifiedLeads: 130, bookings: 45, conversionRate: 14.1 },
-  { name: "Instagram Ads", totalLeads: 280, qualifiedLeads: 115, bookings: 38, conversionRate: 13.6 },
-  { name: "99acres", totalLeads: 200, qualifiedLeads: 90, bookings: 32, conversionRate: 16.0 },
-  { name: "MagicBricks", totalLeads: 185, qualifiedLeads: 82, bookings: 28, conversionRate: 15.1 },
-  { name: "Housing.com", totalLeads: 160, qualifiedLeads: 70, bookings: 24, conversionRate: 15.0 },
-  { name: "Walk-in", totalLeads: 95, qualifiedLeads: 55, bookings: 28, conversionRate: 29.5 },
-  { name: "Phone Call", totalLeads: 130, qualifiedLeads: 72, bookings: 35, conversionRate: 26.9 },
-  { name: "WhatsApp", totalLeads: 220, qualifiedLeads: 120, bookings: 48, conversionRate: 21.8 },
-  { name: "Manual Entry", totalLeads: 75, qualifiedLeads: 42, bookings: 18, conversionRate: 24.0 },
-];
-
-const getTrapezoidPoints = (topWidth: number, bottomWidth: number, height: number = 32) => {
-  const x_top_left = 25 - topWidth / 2;
-  const x_top_right = 25 + topWidth / 2;
-  const x_bottom_left = 25 - bottomWidth / 2;
-  const x_bottom_right = 25 + bottomWidth / 2;
-  return `${x_top_left},2 ${x_top_right},2 ${x_bottom_right},${height - 2} ${x_bottom_left},${height - 2}`;
-};
-
-// ─── 1. Sales Funnel (Enterprise CRM) ─────────────────────────────────────────
-export const SalesFunnel = () => (
-  <div className="bg-white rounded-[18px] border border-[#E8E2D6] shadow-[0_1px_4px_rgba(0,0,0,0.04)] p-5 h-full">
-    {/* Title */}
-    <div className="flex items-center gap-2 mb-0.5">
-      <Filter size={15} className="text-[#1A3C2A]" />
-      <h3 className="text-[#1A3C2A] text-sm font-bold">Sales Funnel</h3>
-    </div>
-    <p className="text-[#6B7283] text-[10px] mb-4">Lead progression through the sales pipeline</p>
-
-    {/* Column Headers */}
-    <div className="grid grid-cols-[50px_1fr_40px_70px_70px_50px] gap-x-1 text-[8px] font-bold text-[#6B7283] uppercase tracking-wider mb-2 px-0.5">
-      <span />
-      <span>Stage</span>
-      <span className="text-right">Count</span>
-      <span className="text-right">Conversion %</span>
-      <span className="text-right">Drop-off %</span>
-      <span className="text-right">Stage %</span>
-    </div>
-
-    {/* Separator */}
-    <div className="h-px bg-[#E8E2D6] mb-2" />
-
-    {/* Funnel Stages */}
-    <div className="space-y-1">
-      {funnelStages.map((stage) => (
-        <div key={stage.name} className="grid grid-cols-[50px_1fr_40px_70px_70px_50px] gap-x-1 items-center h-[32px]">
-          {/* Funnel Segment SVG */}
-          <div className="w-[50px] h-[32px] flex items-center justify-center">
-            <svg width="50" height="32" viewBox="0 0 50 32">
-              {stage.isLast ? (
-                <path
-                  d={`M ${25 - stage.topWidth / 2},2 L ${25 + stage.topWidth / 2},2 L ${25 + stage.bottomWidth / 2
-                    },24 A ${stage.bottomWidth / 2},${stage.bottomWidth / 2} 0 0,1 ${25 - stage.bottomWidth / 2
-                    },24 Z`}
-                  fill={stage.color}
-                />
-              ) : (
-                <polygon
-                  points={getTrapezoidPoints(stage.topWidth, stage.bottomWidth)}
-                  fill={stage.color}
-                />
-              )}
-            </svg>
+        {/* Funnel Data Table */}
+        <div>
+          <div className="grid grid-cols-[1.35fr_.6fr_.7fr_.7fr_.55fr] border-b border-[#edf0f1] pb-2 text-[7px] uppercase text-[#858c91]">
+            <span>Stage</span>
+            <span className="text-right">Leads</span>
+            <span className="text-right">Conv. %</span>
+            <span className="text-right">Drop-off %</span>
+            <span className="text-right">Stage %</span>
           </div>
 
-          {/* Stage Name */}
-          <div className="flex items-center gap-1.5 pl-1">
-            <span
-              className="w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: stage.color }}
+          {funnelStages.map((item) => (
+            <div
+              key={item.name}
+              className="grid h-[24px] grid-cols-[1.35fr_.6fr_.7fr_.7fr_.55fr] items-center border-b border-[#f0f1f2] text-[8px] last:border-0"
+            >
+              <span className="flex items-center gap-2 font-medium">
+                <i className="h-1.5 w-1.5 rounded-full" style={{ background: item.color }} />
+                {item.name}
+              </span>
+              <span className="text-right font-semibold">{item.leads}</span>
+              <span className="text-right">{item.conversion}</span>
+              <span
+                className={
+                  item.dropOff !== "—"
+                    ? "text-right text-red-500"
+                    : "text-right text-[#8b9195]"
+                }
+              >
+                {item.dropOff}
+              </span>
+              <span className="text-right">{item.stage}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Conversion Ratio Summary */}
+      <div className="mt-2 flex h-9 items-center rounded-lg border border-[#e8e8df] bg-[#f7f8f4] px-3">
+        <Award size={15} className="text-[#d39b17]" />
+        <span className="ml-2 text-[8px] font-semibold">Overall Conversion Ratio</span>
+        <span className="ml-auto text-[18px] font-bold text-[#168454]">9.8%</span>
+        <span className="ml-8 text-[8px] text-emerald-600">
+          <TrendingUp size={9} className="inline" /> 0.6%
+        </span>
+        <span className="ml-1 text-[7px] text-[#777e82]">vs last month</span>
+      </div>
+    </section>
+  );
+}
+
+// Lead Trend Widget
+const trendSummary = [
+  { label: "Leads", value: "4,128", color: "#07543d", icon: Users },
+  { label: "Conversions", value: "264", color: "#d89a11", icon: Award },
+  { label: "Bookings", value: "47", color: "#087a67", icon: TrendingUp },
+];
+
+export function LeadTrend() {
+  const [period, setPeriod] = useState("Month");
+
+  return (
+    <section className="h-full rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)]">
+      <CardTitle
+        title="Lead Trend"
+        subtitle="Growth of leads, conversions and bookings over time"
+        action={
+          <div className="flex overflow-hidden rounded-md border border-[#e4e6e7]">
+            {["Week", "Month", "Quarter", "Year"].map((item) => (
+              <button
+                key={item}
+                onClick={() => setPeriod(item)}
+                className={`h-7 px-4 text-[7.5px] ${
+                  period === item
+                    ? "bg-[#073d2e] text-white"
+                    : "bg-white text-[#42484b]"
+                }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        }
+      />
+
+      {/* Legend */}
+      <div className="mb-1 flex justify-center gap-6 text-[8px] text-[#2d3335]">
+        <span>
+          <i className="mr-2 inline-block h-1.5 w-3 rounded bg-[#073d2e]" />
+          Leads
+        </span>
+        <span>
+          <i className="mr-2 inline-block h-1.5 w-3 rounded bg-[#df9e12]" />
+          Conversions
+        </span>
+        <span>
+          <i className="mr-2 inline-block h-1.5 w-3 rounded bg-[#087a67]" />
+          Bookings
+        </span>
+      </div>
+
+      {/* Chart */}
+      <div className="h-[190px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={leadTrendData}
+            margin={{ top: 8, right: 12, left: -22, bottom: 0 }}
+          >
+            <XAxis
+              dataKey="date"
+              axisLine={{ stroke: "#dfe3e4" }}
+              tickLine={false}
+              tick={{ fontSize: 8, fill: "#737a7e" }}
             />
-            <span className="text-[10px] font-semibold text-[#1A3C2A] truncate">
-              {stage.name}
+            <YAxis
+              domain={[0, 500]}
+              ticks={[0, 100, 200, 300, 400, 500]}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 8, fill: "#737a7e" }}
+            />
+            <Tooltip
+              contentStyle={{ borderRadius: 8, borderColor: "#e5e7e8", fontSize: 10 }}
+            />
+            <Line
+              type="linear"
+              dataKey="leads"
+              stroke="#073d2e"
+              strokeWidth={1.5}
+              dot={{ r: 3, fill: "#073d2e" }}
+            />
+            <Line
+              type="linear"
+              dataKey="conversions"
+              stroke="#df9e12"
+              strokeWidth={1.5}
+              dot={{ r: 3, fill: "#df9e12" }}
+            />
+            <Line
+              type="linear"
+              dataKey="bookings"
+              stroke="#087a67"
+              strokeWidth={1.5}
+              dot={{ r: 3, fill: "#087a67" }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-3 border-t border-[#edf0f1] pt-3">
+        {trendSummary.map(({ label, value, color, icon: Icon }) => (
+          <div key={label} className="flex items-center justify-center gap-3">
+            <span
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f4f7f5]"
+              style={{ color }}
+            >
+              <Icon size={14} />
+            </span>
+            <span>
+              <small className="block text-[8px] text-[#7b8286]">{label}</small>
+              <b className="text-[15px]" style={{ color }}>
+                {value}
+              </b>
             </span>
           </div>
-
-          {/* Count */}
-          <span className="text-[11px] font-bold text-[#1A3C2A] text-right">
-            {stage.count.toLocaleString()}
-          </span>
-
-          {/* Conversion */}
-          <span className="text-[10px] text-[#1A3C2A] text-right">{stage.conversion}</span>
-
-          {/* Drop-off */}
-          <span
-            className={`text-[10px] font-medium text-right ${stage.dropOff !== "—" ? "text-[#B91C1C]" : "text-[#9AA1A9]"
-              }`}
-          >
-            {stage.dropOff}
-          </span>
-
-          {/* Stage % */}
-          <span className="text-[10px] text-[#1A3C2A] text-right">{stage.stagePercent}</span>
-        </div>
-      ))}
-    </div>
-
-    {/* Separator */}
-    <div className="h-px bg-[#E8E2D6] mt-3 mb-3" />
-
-    {/* Overall Conversion Ratio */}
-    <div className="flex items-center justify-between bg-[#F8F5EE] rounded-xl px-4 py-3 border border-[#E8E2D6]">
-      <div className="flex items-center gap-2">
-        <Trophy size={12} className="text-[#C59A2C]" />
-        <span className="text-[10px] font-bold text-[#1A3C2A] uppercase tracking-wider">Overall Conversion Ratio</span>
-      </div>
-      <span className="text-xl font-bold text-[#C59A2C]">16.8%</span>
-    </div>
-  </div>
-);
-
-// ─── 2. Lead Trend ────────────────────────────────────────────────────────────
-export const LeadTrend = () => (
-  <div className="w-full h-full flex flex-col justify-between">
-    <div className="mb-1.5">
-      <h3 className="text-[#1A3C2A] text-sm font-bold">Lead Trend</h3>
-      <p className="text-[#6B7283] text-[10px]">Monthly growth in leads, conversions & bookings</p>
-    </div>
-    <div className="w-full min-h-[310px] flex-1 mt-2">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={leadTrendData}
-          margin={{ top: 5, right: 15, left: 0, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke={COLORS.borderColor} />
-          <XAxis dataKey="date" stroke={COLORS.textMuted} tick={{ fontSize: 10 }} />
-          <YAxis stroke={COLORS.textMuted} tick={{ fontSize: 10 }} />
-          <Tooltip content={<ChartTooltip />} />
-          <Legend
-            wrapperStyle={{ fontSize: '10px', paddingTop: '3px' }}
-            iconSize={8}
-          />
-          <Line
-            type="monotone"
-            dataKey="leads"
-            stroke={COLORS.chartLeadTrend}
-            strokeWidth={2}
-            dot={{ fill: COLORS.chartLeadTrend, r: 3 }}
-          />
-          <Line
-            type="monotone"
-            dataKey="conversions"
-            stroke={COLORS.chartConversion}
-            strokeWidth={2}
-            strokeDasharray="5 3"
-            dot={{ fill: COLORS.chartConversion, r: 3 }}
-          />
-          <Line
-            type="monotone"
-            dataKey="bookings"
-            stroke={COLORS.chartBookings}
-            strokeWidth={2}
-            strokeDasharray="2 2"
-            dot={{ fill: COLORS.chartBookings, r: 3 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-// ─── 3. Source Performance ────────────────────────────────────────────────────
-type MetricKey = "all" | "totalLeads" | "qualifiedLeads" | "bookings" | "conversionRate";
-
-const METRIC_TABS: { key: MetricKey; label: string }[] = [
-  { key: "all", label: "All metrics" },
-  { key: "totalLeads", label: "Total Leads" },
-  { key: "qualifiedLeads", label: "Qualified Leads" },
-  { key: "bookings", label: "Bookings" },
-  { key: "conversionRate", label: "Conversion Rate" },
-];
-
-export const SourcePerformance = () => {
-  const [activeMetric, setActiveMetric] = useState<MetricKey>("all");
-  const [viewMode, setViewMode] = useState<"chart" | "table">("chart");
-
-  // Sort data by the selected metric
-  const sortedData = [...sourceData].sort((a, b) => {
-    if (activeMetric === "all") return b.totalLeads - a.totalLeads;
-    return (b[activeMetric] as number) - (a[activeMetric] as number);
-  });
-
-  // Bar colors for different metrics
-  const barColors = {
-    totalLeads: "#133C27",
-    qualifiedLeads: "#215B38",
-    bookings: "#C9A82C",
-    conversionRate: "#B8960F",
-  };
-
-  const visibleBars = activeMetric === "all"
-    ? [
-        { key: "totalLeads", label: "Total Leads", color: barColors.totalLeads },
-        { key: "qualifiedLeads", label: "Qualified Leads", color: barColors.qualifiedLeads },
-        { key: "bookings", label: "Bookings", color: barColors.bookings },
-      ]
-    : [
-        {
-          key: activeMetric,
-          label: METRIC_TABS.find(t => t.key === activeMetric)?.label || activeMetric,
-          color: barColors[activeMetric as keyof typeof barColors] || "#133C27",
-        },
-      ];
-
-  return (
-    <div className="w-full">
-      <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
-        <div>
-          <h3 className="text-[#1A3C2A] text-sm font-bold">Source Performance</h3>
-          <p className="text-[#6B7283] text-[10px]">Lead quality & conversion by channel</p>
-        </div>
-        <div className="flex items-center gap-1">
-          {/* View toggle */}
-          <div className="flex bg-[#F1E9D4] rounded p-0.5">
-            <button
-              onClick={() => setViewMode("chart")}
-              className={`px-2 py-0.5 text-[9px] rounded ${viewMode === "chart" ? "bg-white shadow" : "text-[#6B7283]"}`}
-            >
-              Chart
-            </button>
-            <button
-              onClick={() => setViewMode("table")}
-              className={`px-2 py-0.5 text-[9px] rounded ${viewMode === "table" ? "bg-white shadow" : "text-[#6B7283]"}`}
-            >
-              Table
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Metric Tabs */}
-      <div className="flex flex-wrap gap-1 mb-2">
-        {METRIC_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveMetric(tab.key)}
-            className={`px-2.5 py-0.5 text-[9px] rounded-full transition-colors ${activeMetric === tab.key
-                ? "bg-[#133C27] text-white"
-                : "bg-[#F1E9D4] text-[#6B7283] hover:bg-[#E8E2D6]"
-              }`}
-          >
-            {tab.label}
-          </button>
         ))}
       </div>
-
-      {viewMode === "chart" ? (
-        <div className="w-full h-[260px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={sortedData}
-              margin={{ top: 10, right: 10, left: 0, bottom: 30 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke={COLORS.borderColor} />
-              <XAxis
-                dataKey="name"
-                stroke={COLORS.textMuted}
-                tick={{ fontSize: 9 }}
-                angle={-45}
-                textAnchor="end"
-                height={30}
-              />
-              <YAxis stroke={COLORS.textMuted} tick={{ fontSize: 9 }} />
-              <Tooltip content={<ChartTooltip />} />
-              {visibleBars.map((b) => (
-                <Bar
-                  key={b.key}
-                  dataKey={b.key}
-                  name={b.label}
-                  fill={b.color}
-                  radius={[3, 3, 0, 0]}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      ) : (
-        /* Table View */
-        <div className="overflow-x-auto rounded border border-[#E8E2D6]">
-          <table className="w-full text-[10px]">
-            <thead className="bg-[#F1E9D4]">
-              <tr>
-                <th className="text-left p-1.5 text-[#1A3C2A] font-semibold border-b border-[#E8E2D6]">
-                  Source
-                </th>
-                <th className="text-right p-1.5 text-[#1A3C2A] font-semibold border-b border-[#E8E2D6]">
-                  Total Leads
-                </th>
-                <th className="text-right p-1.5 text-[#1A3C2A] font-semibold border-b border-[#E8E2D6]">
-                  Qualified Leads
-                </th>
-                <th className="text-right p-1.5 text-[#1A3C2A] font-semibold border-b border-[#E8E2D6]">
-                  Bookings
-                </th>
-                <th className="text-right p-1.5 text-[#1A3C2A] font-semibold border-b border-[#E8E2D6]">
-                  Conversion Rate
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedData.map((source, index) => (
-                <tr
-                  key={source.name}
-                  className={`${index % 2 === 0 ? "bg-[#FFFFFF]" : "bg-[#F8F5EE]"
-                    } hover:bg-[#F1E9D4] transition-colors`}
-                >
-                  <td className="p-1.5 text-[#1A3C2A] font-medium border-b border-[#E8E2D6]">
-                    {source.name}
-                  </td>
-                  <td className="p-1.5 text-right text-[#1A3C2A] border-b border-[#E8E2D6]">
-                    {source.totalLeads}
-                  </td>
-                  <td className="p-1.5 text-right text-[#1A3C2A] border-b border-[#E8E2D6]">
-                    {source.qualifiedLeads}
-                  </td>
-                  <td className="p-1.5 text-right text-[#1A3C2A] border-b border-[#E8E2D6]">
-                    {source.bookings}
-                  </td>
-                  <td className="p-1.5 text-right font-semibold border-b border-[#E8E2D6]">
-                    <span
-                      className={`px-1 py-0.5 rounded-full text-[9px] ${source.conversionRate >= 25
-                          ? "bg-[#E8F5EC] text-[#1A5C27]"
-                          : source.conversionRate >= 20
-                            ? "bg-[#FDF5E1] text-[#B8960F]"
-                            : "bg-[#FDE8E8] text-[#B31B27]"
-                        }`}
-                    >
-                      {source.conversionRate.toFixed(1)}%
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Summary Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mt-2">
-        <div className="bg-[#F1E9D4] rounded p-1.5 border border-[#E8E2D6]">
-          <div className="text-[9px] text-[#6B7283] mb-0.5">Total Leads</div>
-          <div className="text-sm font-bold text-[#1A3C2A]">
-            {sourceData.reduce((sum, s) => sum + s.totalLeads, 0).toLocaleString()}
-          </div>
-          <div className="text-[8px] text-[#9AA1A9]">Across all sources</div>
-        </div>
-        <div className="bg-[#F1E9D4] rounded p-1.5 border border-[#E8E2D6]">
-          <div className="text-[9px] text-[#6B7283] mb-0.5">Qualified Leads</div>
-          <div className="text-sm font-bold text-[#3A8B4D]">
-            {sourceData.reduce((sum, s) => sum + s.qualifiedLeads, 0).toLocaleString()}
-          </div>
-          <div className="text-[8px] text-[#9AA1A9]">
-            {((sourceData.reduce((sum, s) => sum + s.qualifiedLeads, 0) /
-              sourceData.reduce((sum, s) => sum + s.totalLeads, 0)) * 100).toFixed(1)}% qualified
-          </div>
-        </div>
-        <div className="bg-[#F1E9D4] rounded p-1.5 border border-[#E8E2D6]">
-          <div className="text-[9px] text-[#6B7283] mb-0.5">Total Bookings</div>
-          <div className="text-sm font-bold text-[#C9A82C]">
-            {sourceData.reduce((sum, s) => sum + s.bookings, 0).toLocaleString()}
-          </div>
-          <div className="text-[8px] text-[#9AA1A9]">Closed deals</div>
-        </div>
-        <div className="bg-[#F1E9D4] rounded p-1.5 border border-[#E8E2D6]">
-          <div className="text-[9px] text-[#6B7283] mb-0.5">Avg Conversion</div>
-          <div className="text-sm font-bold text-[#1A5C27]">
-            {(sourceData.reduce((sum, s) => sum + s.conversionRate, 0) / sourceData.length).toFixed(1)}%
-          </div>
-          <div className="text-[8px] text-[#9AA1A9]">Overall average</div>
-        </div>
-      </div>
-    </div>
+    </section>
   );
-};
+}
 
-// ─── 4. Combined Dashboard ────────────────────────────────────────────────────
-export const DashboardCharts = () => (
-  <div className="space-y-2 p-2 bg-[#F8F5EE] rounded-xl">
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-      <div className="bg-[#FFFFFF] p-2 rounded-xl border border-[#E8E2D6] shadow-[0_2px_8px_rgba(26,92,39,0.08)]">
-        <SalesFunnel />
-      </div>
-      <div className="bg-[#FFFFFF] p-2 rounded-xl border border-[#E8E2D6] shadow-[0_2px_8px_rgba(26,92,39,0.08)]">
-        <LeadTrend />
-      </div>
-    </div>
-    <div className="bg-[#FFFFFF] p-2 rounded-xl border border-[#E8E2D6] shadow-[0_2px_8px_rgba(26,92,39,0.08)]">
-      <SourcePerformance />
-    </div>
-  </div>
-);
+// Lead Sources Widget
+export function LeadSources() {
+  return (
+    <section className="h-full rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)]">
+      <CardTitle
+        title="Lead Sources"
+        subtitle="Where your leads are coming from"
+        action={
+          <button className="rounded-md border border-[#e6e8e9] px-3 py-1.5 text-[7.5px]">
+            View all
+          </button>
+        }
+      />
 
-export default DashboardCharts;
+      <div className="flex items-center gap-5">
+        {/* Donut Chart */}
+        <div className="relative h-[126px] w-[126px] shrink-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={leadSources}
+                dataKey="value"
+                innerRadius={39}
+                outerRadius={61}
+                paddingAngle={1}
+                stroke="#fff"
+                strokeWidth={1}
+              >
+                {leadSources.map((item) => (
+                  <Cell key={item.name} fill={item.color} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+
+          {/* Center Text */}
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+            <b className="text-[15px]">4,128</b>
+            <span className="text-[7px] text-[#777e82]">Total Leads</span>
+          </div>
+        </div>
+
+        {/* Source List */}
+        <div className="min-w-0 flex-1 space-y-1.5">
+          {leadSources.map((item) => (
+            <div
+              key={item.name}
+              className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[8px]"
+            >
+              <span className="truncate">
+                <i
+                  className="mr-2 inline-block h-1.5 w-1.5 rounded-full"
+                  style={{ background: item.color }}
+                />
+                {item.name}
+              </span>
+              <b>{item.value.toLocaleString()}</b>
+              <span className="text-[#8a9094]">({item.percent})</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

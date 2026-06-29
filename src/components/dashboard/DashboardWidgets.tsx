@@ -1,176 +1,283 @@
 "use client";
 
-import { 
-  AlertCircle, 
-  Clock, 
-  UserPlus, 
+import {
+  Activity,
+  CalendarCheck,
   ChevronRight,
-  TrendingUp,
-  ExternalLink
+  Clock3,
+  Handshake,
+  ShieldCheck,
+  Sparkles,
+  Trophy,
+  UserRoundCheck,
+  UsersRound,
 } from "lucide-react";
-import { 
-  attentionQueue, 
-  repPerformance, 
-  activityTimeline, 
-  recentLeads 
-} from "@/mock/dashboard";
-import { cn } from "@/lib/utils";
+import { activities, insights, liveLeadStatus, recentLeads, repPerformance } from "@/mock/dashboard";
 
-export function AttentionQueue() {
+const tones: Record<string, { bg: string; text: string; line: string }> = {
+  green: { bg: "bg-emerald-50", text: "text-emerald-700", line: "bg-emerald-600" },
+  blue: { bg: "bg-blue-50", text: "text-blue-700", line: "bg-blue-600" },
+  gold: { bg: "bg-amber-50", text: "text-amber-600", line: "bg-amber-500" },
+  purple: { bg: "bg-purple-50", text: "text-purple-700", line: "bg-purple-600" },
+  orange: { bg: "bg-orange-50", text: "text-orange-600", line: "bg-orange-500" },
+  teal: { bg: "bg-teal-50", text: "text-teal-700", line: "bg-teal-600" },
+  red: { bg: "bg-red-50", text: "text-red-600", line: "bg-red-500" },
+};
+
+// Helper Components
+const Title = ({ title, subtitle }: { title: string; subtitle: string }) => (
+  <div>
+    <h2 className="text-[13px] font-bold uppercase text-[#161a1b]">{title}</h2>
+    <p className="mt-1 text-[10px] text-[#7c8387]">{subtitle}</p>
+  </div>
+);
+
+const ViewAll = () => (
+  <button className="rounded-md border border-[#e6e8e9] px-3 py-2 text-[10px]">
+    View all
+  </button>
+);
+
+const Card = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <section
+    className={`rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)] ${className}`}
+  >
+    {children}
+  </section>
+);
+
+const statusIcons = [
+  UsersRound,
+  UserRoundCheck,
+  Clock3,
+  CalendarCheck,
+  Handshake,
+  Trophy,
+  ShieldCheck,
+  Activity,
+];
+
+const statusClass: Record<string, string> = {
+  New: "bg-emerald-50 text-emerald-700",
+  Contacted: "bg-blue-50 text-blue-700",
+  Qualified: "bg-amber-50 text-amber-700",
+  "Site Visit": "bg-purple-50 text-purple-700",
+  Negotiation: "bg-red-50 text-red-600",
+};
+
+// Live Lead Status Widget
+export function LiveLeadStatus() {
   return (
-    <div className="bg-white rounded-2xl border border-[#E8E2D6] shadow-sm flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-[#E8E2D6] flex items-center justify-between">
-        <h3 className="text-sm font-bold text-brand-text">Attention Queue</h3>
-        <span className="text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-full">4 Actions</span>
+    <Card className="h-full">
+      <div className="mb-3 flex items-start justify-between">
+        <Title title="Live Lead Status" subtitle="Real-time distribution of leads" />
+        <ViewAll />
       </div>
-      <div className="flex-1 overflow-y-auto max-h-[350px]">
-        {attentionQueue.map((item) => (
-          <div key={item.id} className="p-4 border-b border-[#F1E9D4] last:border-0 hover:bg-[#F8F5EE] transition-colors group cursor-pointer">
-            <div className="flex items-start gap-3">
-              <div className={cn(
-                "p-2 rounded-lg",
-                item.severity === 'high' ? "bg-red-50 text-red-600" : 
-                item.severity === 'medium' ? "bg-[#FDF5E1] text-[#B8960F]" : "bg-[#E1F0FA] text-[#1A6B8C]"
-              )}>
-                {item.type.includes('SLA') ? <Clock size={16} /> : <AlertCircle size={16} />}
+
+      <div className="grid grid-cols-4 gap-x-3 gap-y-3">
+        {liveLeadStatus.map((item, index) => {
+          const Icon = statusIcons[index];
+          const tone = tones[item.tone];
+
+          return (
+            <div key={item.label} className="min-w-0 border-b border-[#eef0f1] pb-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`flex h-7 w-7 items-center justify-center rounded-lg ${tone.bg} ${tone.text}`}
+                >
+                  <Icon size={13} />
+                </span>
+                <span>
+                  <small className="block text-[9px] text-[#6f767a]">{item.label}</small>
+                  <b className="text-[13px]">{item.value}</b>
+                </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-bold text-brand-text truncate">{item.type}</p>
-                  <span className="text-[10px] text-[#9AA1A9] font-medium whitespace-nowrap">{item.time}</span>
-                </div>
-                <p className="text-[10px] text-[#6B7283] mt-0.5">Lead: <span className="text-[#1A3C2A] font-semibold">{item.lead}</span></p>
+
+              <div className="mt-1 flex items-center gap-1">
+                <i className={`h-[2px] flex-1 ${tone.line}`} />
+                <span className="text-[9px] text-[#7a8185]">{item.percent}</span>
               </div>
-              <ChevronRight size={14} className="text-[#D8CFB9] group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-      <button 
-        onClick={() => alert("Viewing all tasks...")}
-        className="p-3 text-center text-xs font-bold text-primary hover:bg-primary/5 transition-colors border-t border-[#E8E2D6]"
-      >
-        View All Tasks
-      </button>
-    </div>
+    </Card>
   );
 }
 
-export function RepresentativePerformance() {
+// RM Performance Widget
+export function RMPerformance() {
   return (
-    <div className="bg-white rounded-2xl border border-[#E8E2D6] shadow-sm flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-[#E8E2D6] flex items-center justify-between">
-        <h3 className="text-sm font-bold text-brand-text">Top Performers</h3>
-        <button className="text-[10px] font-bold text-primary hover:underline">View Team</button>
+    <Card className="h-full">
+      <div className="mb-3 flex items-start justify-between">
+        <Title title="RM Performance" subtitle="Top performing relationship managers" />
+        <ViewAll />
       </div>
-      <div className="p-4 space-y-4">
-        {repPerformance.map((rep, idx) => (
-          <div key={rep.name} className="flex items-center gap-3 group cursor-pointer">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold group-hover:bg-primary group-hover:text-white transition-all">
-              {rep.name.charAt(0)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-brand-text truncate group-hover:text-primary transition-colors">{rep.name}</p>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="text-[10px] text-[#9AA1A9]">Visits: <b className="text-[#1A3C2A]">{rep.visits}</b></span>
-                <span className="text-[10px] text-[#9AA1A9]">Bookings: <b className="text-[#1A3C2A]">{rep.bookings}</b></span>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-bold text-[#133C27]">{rep.rate}</p>
-              <p className="text-[9px] text-[#9AA1A9] font-medium">Conv. Rate</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-export function LeadSummaryWidget() {
-  return (
-    <div className="bg-white rounded-2xl border border-[#E8E2D6] shadow-sm flex flex-col overflow-hidden col-span-1 lg:col-span-2">
-      <div className="p-5 border-b border-[#E8E2D6] flex items-center justify-between">
-        <h3 className="text-sm font-bold text-brand-text">Lead Summary</h3>
-        <button 
-          onClick={() => alert("Redirecting to detailed reports...")}
-          className="text-xs font-bold text-primary flex items-center gap-1 hover:underline"
+      <div className="grid grid-cols-[1.4fr_.55fr_.55fr_.5fr] border-b border-[#eef0f1] pb-2 text-[9px] uppercase text-[#858c90]">
+        <span>RM Name</span>
+        <span>Assigned</span>
+        <span>Bookings</span>
+        <span>Conv. %</span>
+      </div>
+
+      {repPerformance.map((rep, index) => (
+        <div
+          key={rep.name}
+          className="grid h-8 grid-cols-[1.4fr_.55fr_.55fr_.5fr] items-center border-b border-[#f1f2f2] text-[10px] last:border-0"
         >
-          View Detailed Report <ExternalLink size={12} />
-        </button>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-[#F1E9D4]/50">
-              <th className="px-5 py-3 text-[10px] font-bold text-[#6B7283] uppercase">Lead Name</th>
-              <th className="px-5 py-3 text-[10px] font-bold text-[#6B7283] uppercase">Project</th>
-              <th className="px-5 py-3 text-[10px] font-bold text-[#6B7283] uppercase">RM</th>
-              <th className="px-5 py-3 text-[10px] font-bold text-[#6B7283] uppercase">Stage</th>
-              <th className="px-5 py-3 text-[10px] font-bold text-[#6B7283] uppercase">Next Follow-up</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#F1E9D4]">
-            {recentLeads.map((lead) => (
-              <tr key={lead.name} className="hover:bg-[#F8F5EE] transition-colors cursor-pointer group">
-                <td className="px-5 py-3">
-                  <p className="text-xs font-bold text-brand-text group-hover:text-primary transition-colors">{lead.name}</p>
-                  <p className="text-[10px] text-[#9AA1A9]">{lead.source}</p>
-                </td>
-                <td className="px-5 py-3 text-xs text-[#6B7283]">{lead.project}</td>
-                <td className="px-5 py-3 text-xs text-[#6B7283]">{lead.rm}</td>
-                <td className="px-5 py-3">
-                  <span className={cn(
-                    "text-[10px] px-2 py-0.5 rounded-full font-bold",
-                    lead.stage === 'Qualified' ? "bg-[#E1F5E8] text-[#133C27]" :
-                    lead.stage === 'New' ? "bg-[#E8F5EC] text-[#133C27]" :
-                    lead.stage === 'Site Visit' ? "bg-[#E1F0FA] text-[#1A6B8C]" :
-                    lead.stage === 'Negotiation' ? "bg-[#FDF5E1] text-[#B8960F]" :
-                    lead.stage === 'Contacted' ? "bg-[#FCF3E1] text-[#C9A82C]" :
-                    "bg-[#FCF3E1] text-[#C9A82C]"
-                  )}>
-                    {lead.stage}
-                  </span>
-                </td>
-                <td className="px-5 py-3 text-xs font-semibold text-[#1A3C2A]">{lead.next}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          <span className="flex items-center gap-2 font-medium">
+            <i className="flex h-5 w-5 items-center justify-center rounded-full bg-[#e8eee9] text-[8px] text-[#174f3d]">
+              {rep.name
+                .split(" ")
+                .map((name) => name[0])
+                .join("")}
+            </i>
+            {rep.name}
+          </span>
+          <span>{rep.assigned}</span>
+          <span>{rep.bookings}</span>
+          <span>
+            <b
+              className={`rounded-full px-2 py-0.5 ${
+                index < 3 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
+              }`}
+            >
+              {rep.rate}
+            </b>
+          </span>
+        </div>
+      ))}
+    </Card>
   );
 }
 
-export function ActivityTimeline() {
+// Recent Leads Widget
+export function RecentLeads() {
   return (
-    <div className="bg-white rounded-2xl border border-[#E8E2D6] shadow-sm flex flex-col overflow-hidden">
-      <div className="p-5 border-b border-[#E8E2D6] flex items-center justify-between">
-        <h3 className="text-sm font-bold text-brand-text">Activity Timeline</h3>
-        <button className="p-1.5 hover:bg-[#F1E9D4] rounded-lg transition-colors">
-          <Clock size={14} className="text-[#9AA1A9]" />
-        </button>
+    <Card className="h-full overflow-hidden">
+      <div className="mb-3 flex items-start justify-between">
+        <Title title="Recent Leads" subtitle="Latest leads added to the system" />
+        <ViewAll />
       </div>
-      <div className="p-5 flex-1 relative">
-        <div className="absolute left-7 top-5 bottom-5 w-px bg-[#E8E2D6]" />
-        <div className="space-y-6">
-          {activityTimeline.map((activity) => (
-            <div key={activity.id} className="relative flex gap-4 pl-6">
-              <div className="absolute left-[-5px] top-1 w-2.5 h-2.5 rounded-full bg-white border-2 border-primary z-10" />
-              <div className="flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-tight">{activity.type}</p>
-                  <span className="text-[10px] text-[#9AA1A9] font-medium">{activity.time}</span>
-                </div>
-                <p className="text-xs text-brand-text mt-0.5 font-medium">{activity.desc}</p>
-                <p className="text-[10px] text-[#9AA1A9] mt-1 flex items-center gap-1">
-                  <UserPlus size={10} /> {activity.user}
-                </p>
-              </div>
-            </div>
-          ))}
+
+      <div className="w-full overflow-hidden">
+        <div className="grid grid-cols-[1fr_1.05fr_.78fr_1fr_.78fr_.65fr] gap-x-2 border-b border-[#eef0f1] pb-2 text-[8px] uppercase text-[#858c90]">
+          <span>Lead</span>
+          <span>Project</span>
+          <span>Source</span>
+          <span>Assigned RM</span>
+          <span>Status</span>
+          <span>Time</span>
         </div>
+
+        {recentLeads.map((lead) => (
+          <div
+            key={lead.name}
+            className="grid min-h-[36px] grid-cols-[1fr_1.05fr_.78fr_1fr_.78fr_.65fr] items-center gap-x-2 border-b border-[#f1f2f2] text-[9px] last:border-0"
+          >
+            <b className="truncate">{lead.name}</b>
+            <span className="truncate">{lead.project}</span>
+            <span className="truncate">{lead.source}</span>
+            <span className="truncate">{lead.rm}</span>
+            <span>
+              <i
+                className={`whitespace-nowrap rounded-full px-1.5 py-0.5 not-italic ${statusClass[lead.status]}`}
+              >
+                {lead.status}
+              </i>
+            </span>
+            <span className="whitespace-nowrap text-[#6f767a]">
+              {lead.time.replace("Today, ", "")}
+            </span>
+          </div>
+        ))}
       </div>
-    </div>
+    </Card>
+  );
+}
+
+// Business Insights Widget
+export function BusinessInsights() {
+  return (
+    <Card className="h-full">
+      <div className="mb-3">
+        <Title title="Business Insights" subtitle="Key insights to help you make better decisions" />
+      </div>
+
+      <div className="space-y-2.5">
+        {insights.map((item) => {
+          const tone = tones[item.tone];
+
+          return (
+            <div
+              key={item.title}
+              className="flex min-h-[62px] items-center rounded-lg border border-[#edf0f1] px-3"
+            >
+              <span
+                className={`mr-2 flex h-7 w-7 items-center justify-center rounded-md ${tone.bg} ${tone.text}`}
+              >
+                <Sparkles size={12} />
+              </span>
+
+              <span className="min-w-0 flex-1 text-[9px] leading-relaxed text-[#5f666a]">
+                {item.title}
+                <b className="block text-[12px] leading-tight text-[#171b1c]">
+                  {item.value}
+                  <small className="font-normal text-[#7b8286]">{item.note}</small>
+                </b>
+              </span>
+
+              <ChevronRight size={11} className={tone.text} />
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+// Recent Activities Widget
+export function RecentActivities() {
+  return (
+    <Card className="h-full">
+      <div className="mb-3 flex items-start justify-between">
+        <Title title="Recent Activities" subtitle="Latest updates across your leads and team" />
+        <ViewAll />
+      </div>
+
+      <div className="relative ml-1 space-y-0.5 before:absolute before:bottom-2 before:left-[3px] before:top-2 before:w-px before:bg-[#dfe3e4]">
+        {activities.map((item) => {
+          const tone = tones[item.tone];
+
+          return (
+            <div
+              key={`${item.time}-${item.title}`}
+              className="relative grid min-h-[43px] grid-cols-[66px_minmax(0,1fr)_auto] items-center gap-2 pl-4 text-[9px]"
+            >
+              <i
+                className={`absolute left-0 z-10 h-2 w-2 rounded-full border-2 border-white ${tone.line}`}
+              />
+              <span className="text-[#7d8488]">{item.time}</span>
+              <span className="min-w-0 leading-snug">
+                <b className="block text-[#171b1c]">{item.title}</b>
+                <span className="block truncate text-[#5f666a]">{item.detail}</span>
+              </span>
+              <em
+                className={`whitespace-nowrap rounded px-1.5 py-1 text-[8px] not-italic ${tone.bg} ${tone.text}`}
+              >
+                {item.badge}
+              </em>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
   );
 }

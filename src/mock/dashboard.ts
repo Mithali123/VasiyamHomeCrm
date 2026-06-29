@@ -1,112 +1,250 @@
-// Practical CRM mock data for a mid-size Indian real estate developer
-// Covers ~3 active residential projects, ~12 field RMs
-
-// @/mock/dashboard.ts
-
-// Add explicit type with literal union
-export interface KPIData {
+export type KPIItem = {
   label: string;
   value: string;
-  change: number;
-  trend: "up" | "down";  // ← Literal type union
-  tooltip: string;
-}
+  change?: string;
+  detail?: string;
+  tone: "green" | "blue" | "gold" | "purple" | "teal" | "orange";
+};
 
-export const kpiData: KPIData[] = [
-  { label: "Enquiries", value: "312", change: 8.3, trend: "up", tooltip: "Total enquiries received this month across all channels" },
-  { label: "Prospects", value: "178", change: 5.1, trend: "up", tooltip: "Enquiries where initial contact was established" },
-  { label: "Qualified Leads", value: "94", change: -2.1, trend: "down", tooltip: "Leads that have confirmed budget, timeline & requirements" },
-  { label: "Bookings", value: "11", change: 22.2, trend: "up", tooltip: "Token amount collected and booking confirmed this month" },
-  { label: "Conversion Rate", value: "3.5%", change: 0.3, trend: "up", tooltip: "Bookings as a percentage of total enquiries" },
-  { label: "Pipeline Value", value: "₹12.8Cr", change: 5.9, trend: "up", tooltip: "Total estimated revenue from active negotiation-stage leads" },
-  { label: "SLA Compliance", value: "88.4%", change: -1.8, trend: "down", tooltip: "Percentage of leads responded to within the 30-minute SLA window" },
-  { label: "Avg Response Time", value: "34 min", change: -11.5, trend: "up", tooltip: "Average time from lead creation to first RM contact. Lower is better." },
-];
-export const leadProgressData = [
-  { label: "New", value: 134 },
-  { label: "Contacted", value: 178 },
-  { label: "Qualified", value: 94 },
-  { label: "Site Visit", value: 52 },
-  { label: "Negotiation", value: 18 },
-  { label: "Booking Confirmed", value: 11 },
+export const kpiData: KPIItem[] = [
+  { label: "Total Leads", value: "4,128", change: "12.4%", detail: "vs last month", tone: "green" },
+  { label: "New Leads", value: "312", change: "12.1%", detail: "vs last month", tone: "blue" },
+  { label: "Pipeline", value: "₹248.6M", change: "13.2%", detail: "vs last month", tone: "gold" }, // Changed from "₹248.6 Cr" to "₹248.6M"
+  { label: "Conversion Rate", value: "6.4%", change: "0.3%", detail: "vs last month", tone: "purple" },
+  { label: "Bookings (MTD)", value: "47", change: "5%", detail: "vs last month", tone: "teal" },
+  {
+    label: "Follow-ups Due",
+    value: "86",
+    detail: "21 overdue  •  65 today",
+    tone: "orange",
+  },
 ];
 
-export const funnelData = [
-  { stage: "New Enquiry", value: 312, color: "#4A5D23" },
-  { stage: "Contacted", value: 178, color: "#5D732D" },
-  { stage: "Qualified", value: 94, color: "#708937" },
-  { stage: "Site Visit", value: 52, color: "#839F41" },
-  { stage: "Negotiation", value: 18, color: "#96B54B" },
-  { stage: "Booked", value: 11, color: "#C9A84C" },
+export const funnelStages = [
+  { name: "New Lead", leads: "1,248", conversion: "—", dropOff: "—", stage: "100%", color: "#064734", width: 100 },
+  { name: "Contacted", leads: "847", conversion: "67.4%", dropOff: "32.6%", stage: "67.4%", color: "#07563d", width: 90 },
+  { name: "Qualified", leads: "423", conversion: "33.8%", dropOff: "33.6%", stage: "33.8%", color: "#208345", width: 78 },
+  { name: "Site Visit", leads: "218", conversion: "17.5%", dropOff: "16.3%", stage: "17.5%", color: "#dda90c", width: 66 },
+  { name: "Negotiation", leads: "104", conversion: "8.3%", dropOff: "9.2%", stage: "8.3%", color: "#f29b0b", width: 54 },
+  { name: "Booking", leads: "60", conversion: "4.7%", dropOff: "3.6%", stage: "4.7%", color: "#f36c13", width: 43 },
+  { name: "Won", leads: "126", conversion: "9.8%", dropOff: "—", stage: "9.8%", color: "#0e4a38", width: 32 },
+  { name: "Lost", leads: "312", conversion: "24.3%", dropOff: "—", stage: "24.3%", color: "#e92329", width: 22 },
 ];
 
-export const trendData = [
-  { name: "Mon", leads: 42, visits: 8, bookings: 1 },
-  { name: "Tue", leads: 48, visits: 12, bookings: 2 },
-  { name: "Wed", leads: 35, visits: 10, bookings: 1 },
-  { name: "Thu", leads: 52, visits: 14, bookings: 2 },
-  { name: "Fri", leads: 44, visits: 11, bookings: 2 },
-  { name: "Sat", leads: 58, visits: 18, bookings: 3 },
-  { name: "Sun", leads: 33, visits: 8, bookings: 0 },
+export const leadTrendData = [
+  { date: "1 May", leads: 235, conversions: 120, bookings: 32 },
+  { date: "8 May", leads: 292, conversions: 150, bookings: 58 },
+  { date: "15 May", leads: 345, conversions: 180, bookings: 78 },
+  { date: "22 May", leads: 398, conversions: 210, bookings: 98 },
+  { date: "29 May", leads: 445, conversions: 245, bookings: 118 },
+  { date: "", leads: 488, conversions: 288, bookings: 148 },
 ];
 
-export const sourcePerformanceData = [
-  { name: "Website", total: 78, qualified: 32, bookings: 5 },
-  { name: "99acres", total: 65, qualified: 28, bookings: 4 },
-  { name: "MagicBricks", total: 52, qualified: 21, bookings: 3 },
-  { name: "Facebook Ads", total: 42, qualified: 15, bookings: 2 },
-  { name: "Housing.com", total: 38, qualified: 14, bookings: 2 },
-  { name: "Instagram", total: 28, qualified: 8, bookings: 1 },
-  { name: "Referral", total: 18, qualified: 16, bookings: 4 },
-  { name: "Walk-in", total: 12, qualified: 11, bookings: 3 },
-  { name: "WhatsApp", total: 22, qualified: 12, bookings: 2 },
-  { name: "Phone Call", total: 15, qualified: 8, bookings: 1 },
+export const leadSources = [
+  { name: "Website", value: 1184, percent: "28.7%", color: "#004b36" },
+  { name: "Referral", value: 612, percent: "14.8%", color: "#087d62" },
+  { name: "Instagram", value: 488, percent: "11.8%", color: "#f1a208" },
+  { name: "Google Ads", value: 466, percent: "11.3%", color: "#ff7a00" },
+  { name: "MagicBricks", value: 352, percent: "8.5%", color: "#e72d2f" },
+  { name: "99acres", value: 296, percent: "7.2%", color: "#2582be" },
+  { name: "Others", value: 730, percent: "17.7%", color: "#7d858c" },
 ];
 
-// Derived bubble data for scatter chart: x=volume, y=conv%, z=bookings
-export const sourceBubbleData = sourcePerformanceData.map((s) => ({
-  name: s.name,
-  volume: s.total,
-  convRate: parseFloat(((s.bookings / s.total) * 100).toFixed(1)),
-  bookings: s.bookings,
-  qualified: s.qualified,
-}));
-
-export const projectPerformanceData = [
-  { name: "Vasiyam Greens", leads: 145, visits: 45, bookings: 6, rate: "4.1%" },
-  { name: "The Residency", leads: 98, visits: 28, bookings: 3, rate: "3.1%" },
-  { name: "Sky Heights", leads: 52, visits: 18, bookings: 2, rate: "3.8%" },
-  { name: "Park View (New)", leads: 17, visits: 8, bookings: 0, rate: "0.0%" },
-];
-
-export const attentionQueue = [
-  { id: "LD-2847", type: "SLA Breach", lead: "Rajesh Kumar", time: "3.5h overdue", severity: "high" },
-  { id: "LD-2831", type: "Overdue Follow-up", lead: "Sunitha Menon", time: "2h overdue", severity: "medium" },
-  { id: "LD-2869", type: "Unassigned Lead", lead: "3 leads (Housing.com)", time: "Waiting 45 min", severity: "medium" },
-  { id: "LD-2815", type: "No Next Action", lead: "Anand Krishnamurthy", time: "4d since contact", severity: "low" },
+export const liveLeadStatus = [
+  { label: "New", value: 312, percent: "7.6%", tone: "green" },
+  { label: "Contacted", value: 486, percent: "11.8%", tone: "blue" },
+  { label: "Qualified", value: 274, percent: "6.6%", tone: "gold" },
+  { label: "Site Visit", value: 138, percent: "3.3%", tone: "purple" },
+  { label: "Negotiation", value: 92, percent: "2.2%", tone: "orange" },
+  { label: "Booked", value: 47, percent: "1.1%", tone: "teal" },
+  { label: "Won", value: 28, percent: "0.7%", tone: "green" },
+  { label: "Lost", value: 19, percent: "0.5%", tone: "red" },
 ];
 
 export const repPerformance = [
-  { name: "Arun Kumar", activities: 68, visits: 18, bookings: 4, rate: "5.9%" },
-  { name: "Meera Nair", activities: 55, visits: 14, bookings: 3, rate: "5.5%" },
-  { name: "Divya Sharma", activities: 42, visits: 8, bookings: 2, rate: "4.8%" },
-  { name: "Suresh Pillai", activities: 48, visits: 12, bookings: 2, rate: "4.2%" },
-  { name: "Kiran Ramachandran", activities: 36, visits: 9, bookings: 1, rate: "2.8%" },
-  { name: "Rajesh Kannan", activities: 32, visits: 7, bookings: 1, rate: "3.1%" },
-];
-
-export const activityTimeline = [
-  { id: 1, type: "Lead Assigned", user: "System", desc: "Pradeep Kumar (99acres) assigned to Arun Kumar", time: "10:15 AM" },
-  { id: 2, type: "Call Logged", user: "Arun Kumar", desc: "Outbound call – Pradeep Kumar, 8 min. Interested in 3BHK Vasiyam Greens.", time: "10:42 AM" },
-  { id: 3, type: "Follow-up Added", user: "Arun Kumar", desc: "Site visit scheduled for Pradeep Kumar – Fri 27 Jun, 11:00 AM", time: "11:30 AM" },
-  { id: 4, type: "Site Visit", user: "Meera Nair", desc: "Site visit completed – Anitha Rajan toured Vasiyam Greens Unit 302", time: "12:15 PM" },
-  { id: 5, type: "Booking", user: "Suresh Pillai", desc: "Booking confirmed – Bhaskar Rao, Sky Heights 1403, ₹1.2Cr", time: "02:45 PM" },
+  { name: "Arvind Kumar", assigned: 187, bookings: 18, rate: "9.6%" },
+  { name: "Priya Sharma", assigned: 163, bookings: 14, rate: "8.6%" },
+  { name: "Meera Rajan", assigned: 145, bookings: 12, rate: "8.3%" },
+  { name: "Suresh Kumar", assigned: 134, bookings: 9, rate: "6.7%" },
+  { name: "Nisha Varma", assigned: 121, bookings: 7, rate: "5.8%" },
 ];
 
 export const recentLeads = [
-  { name: "Venkatesh Nair", project: "Vasiyam Greens", source: "99acres", rm: "Arun Kumar", stage: "Site Visit", next: "27 Jun 11:00 AM" },
-  { name: "Anitha Rajan", project: "The Residency", source: "Website", rm: "Meera Nair", stage: "Qualified", next: "Today 3:00 PM" },
-  { name: "Bhaskar Rao", project: "Sky Heights", source: "Referral", rm: "Suresh Pillai", stage: "Negotiation", next: "Today 5:30 PM" },
-  { name: "Lakshmi Devi", project: "Vasiyam Greens", source: "Walk-in", rm: "Divya Sharma", stage: "New", next: "Tomorrow 10:00 AM" },
-  { name: "Prasad Iyer", project: "The Residency", source: "MagicBricks", rm: "Arun Kumar", stage: "Contacted", next: "Tomorrow 2:00 PM" },
+  {
+    name: "Rohit Kumar",
+    project: "Vasiyam Greens",
+    source: "Website",
+    rm: "Arvind Kumar",
+    status: "New",
+    time: "Today, 10:15 AM",
+  },
+  {
+    name: "Anita Shankar",
+    project: "Vasiyam Hills",
+    source: "Referral",
+    rm: "Priya Sharma",
+    status: "Contacted",
+    time: "Today, 09:42 AM",
+  },
+  {
+    name: "Meera Iyer",
+    project: "Vasiyam Heights",
+    source: "Instagram",
+    rm: "Meera Rajan",
+    status: "Qualified",
+    time: "Today, 09:18 AM",
+  },
+  {
+    name: "Suresh R",
+    project: "Vasiyam Elite",
+    source: "99acres",
+    rm: "Suresh Kumar",
+    status: "Site Visit",
+    time: "Today, 08:51 AM",
+  },
+  {
+    name: "Divya Nair",
+    project: "Vasiyam Lakeview",
+    source: "Walk-in",
+    rm: "Nisha Varma",
+    status: "Negotiation",
+    time: "Today, 08:30 AM",
+  },
+  {
+    name: "Karthik S",
+    project: "Vasiyam Greens",
+    source: "Google Ads",
+    rm: "Arvind Kumar",
+    status: "Contacted",
+    time: "Today, 08:12 AM",
+  },
+  {
+    name: "Lakshmi Priya",
+    project: "Vasiyam Heights",
+    source: "MagicBricks",
+    rm: "Priya Sharma",
+    status: "New",
+    time: "Today, 07:58 AM",
+  },
+  {
+    name: "Naveen Raj",
+    project: "Vasiyam Hills",
+    source: "Website",
+    rm: "Meera Rajan",
+    status: "Qualified",
+    time: "Today, 07:41 AM",
+  },
+  {
+    name: "Sanjay Kumar",
+    project: "Vasiyam Elite",
+    source: "Referral",
+    rm: "Suresh Kumar",
+    status: "Site Visit",
+    time: "Today, 07:20 AM",
+  },
+];
+
+export const insights = [
+  {
+    title: "Lead conversion has improved by",
+    value: "12.4%",
+    note: "vs last month",
+    tone: "green",
+  },
+  {
+    title: "Website leads are your top source with",
+    value: "28.7%",
+    note: "of total leads",
+    tone: "blue",
+  },
+  {
+    title: "Site visit to booking conversion is",
+    value: "27.5%",
+    note: "this month",
+    tone: "gold",
+  },
+  {
+    title: "Sales pipeline has increased by",
+    value: "13.2%",
+    note: "to ₹248.6M this month",
+    tone: "green",
+  },
+  {
+    title: "Bookings recorded this month",
+    value: "47",
+    note: "5% higher than last month",
+    tone: "blue",
+  },
+  {
+    title: "21 follow-ups are currently overdue",
+    value: "",
+    note: "Take action to avoid potential loss",
+    tone: "red",
+  },
+];
+
+export const activities = [
+  {
+    time: "10:15 AM",
+    title: "New lead",
+    detail: "Rohit Kumar from Website has been created",
+    badge: "New",
+    tone: "green",
+  },
+  {
+    time: "09:42 AM",
+    title: "Site visit completed",
+    detail: "for Anita Shankar — Vasiyam Hills",
+    badge: "Site Visit",
+    tone: "blue",
+  },
+  {
+    time: "09:18 AM",
+    title: "Booking confirmed",
+    detail: "for Meera Iyer — Vasiyam Heights, Unit 4B",
+    badge: "Booking",
+    tone: "gold",
+  },
+  {
+    time: "08:51 AM",
+    title: "Lead assigned",
+    detail: "Divya Nair has been assigned to Nisha Varma",
+    badge: "Assignment",
+    tone: "green",
+  },
+  {
+    time: "08:30 AM",
+    title: "Follow-up added",
+    detail: "for Suresh R — Call scheduled at 3 PM",
+    badge: "Follow-up",
+    tone: "blue",
+  },
+  {
+    time: "08:12 AM",
+    title: "Lead contacted",
+    detail: "Karthik S responded to the initial call",
+    badge: "Contacted",
+    tone: "blue",
+  },
+  {
+    time: "07:58 AM",
+    title: "New lead",
+    detail: "Lakshmi Priya from MagicBricks has been created",
+    badge: "New",
+    tone: "green",
+  },
+  {
+    time: "07:41 AM",
+    title: "Lead qualified",
+    detail: "Naveen Raj confirmed budget and timeline",
+    badge: "Qualified",
+    tone: "gold",
+  },
+  {
+    time: "07:20 AM",
+    title: "Site visit scheduled",
+    detail: "for Sanjay Kumar at Vasiyam Elite",
+    badge: "Site Visit",
+    tone: "purple",
+  },
 ];

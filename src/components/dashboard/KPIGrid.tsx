@@ -1,103 +1,247 @@
 "use client";
 
-import { Info, TrendingUp, TrendingDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Clock3,
+  IndianRupee,
+  ShieldCheck,
+  TrendingDown,
+  TrendingUp,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { kpiData } from "@/mock/dashboard";
 
-interface KPICardProps {
-  label: string;
-  value: string | number;
-  change: number;
-  trend: "up" | "down";
-  tooltip: string;
+const toneStyles = {
+  green: {
+    icon: "bg-emerald-50 text-emerald-600",
+    line: "#10a568",
+  },
+  blue: {
+    icon: "bg-blue-50 text-blue-600",
+    line: "#2878ed",
+  },
+  gold: {
+    icon: "bg-amber-50 text-amber-600",
+    line: "#d99a12",
+  },
+  purple: {
+    icon: "bg-purple-50 text-purple-600",
+    line: "#8b3cf0",
+  },
+  teal: {
+    icon: "bg-teal-50 text-teal-600",
+    line: "#138f83",
+  },
+  orange: {
+    icon: "bg-orange-50 text-orange-600",
+    line: "#f97316",
+  },
+} as const;
+
+const icons = [
+  Users,
+  UserPlus,
+  IndianRupee,
+  TrendingUp,
+  ShieldCheck,
+  Clock3,
+];
+
+const chartData = [
+  {
+    path: "M4 42 L24 30 L43 35 L63 17 L83 34 L104 29 L124 27 L145 16 L163 26 L178 13",
+    endY: 13,
+  },
+  {
+    path: "M4 44 L23 31 L43 35 L62 16 L82 37 L102 31 L123 29 L143 16 L162 29 L178 12",
+    endY: 12,
+  },
+  {
+    path: "M4 43 L24 31 L44 23 L64 27 L83 11 L103 35 L123 28 L144 24 L162 11 L178 25",
+    endY: 25,
+  },
+  {
+    path: "M4 44 L24 30 L44 25 L64 29 L84 13 L103 36 L123 28 L143 26 L162 12 L178 27",
+    endY: 27,
+  },
+  {
+    path: "M4 43 L23 34 L43 24 L63 30 L83 16 L103 32 L123 23 L143 28 L162 14 L178 21",
+    endY: 21,
+  },
+  {
+    path: "M4 43 L23 31 L43 22 L63 26 L83 13 L103 34 L123 28 L143 26 L162 12 L178 23",
+    endY: 23,
+  },
+];
+
+function Sparkline({
+  index,
+  color,
+}: {
   index: number;
-}
-
-function KPICard({ label, value, change, trend, tooltip, index }: KPICardProps) {
-  const [showTip, setShowTip] = useState(false);
-  const tipRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleOutside = (e: MouseEvent) => {
-      if (tipRef.current && !tipRef.current.contains(e.target as Node)) {
-        setShowTip(false);
-      }
-    };
-    if (showTip) document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
-  }, [showTip]);
+  color: string;
+}) {
+  const chart = chartData[index] ?? chartData[0];
+  const gradientId = `kpi-gradient-${index}`;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="bg-white p-5 rounded-2xl border border-[#E8E2D6] shadow-sm hover:shadow-md transition-shadow group relative"
+    <svg
+      className="h-full w-full overflow-visible"
+      viewBox="0 0 182 52"
+      preserveAspectRatio="none"
+      aria-hidden="true"
     >
-      {/* Decorative gradient — clipped in its own layer so tooltip is never hidden */}
-      <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-        <div
-          className={`absolute -bottom-6 -right-6 w-20 h-20 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity ${trend === "up" ? "bg-[#133C27]" : "bg-red-500"
-            }`}
-        />
-      </div>
-
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-xs font-semibold text-[#6B7283] tracking-wider uppercase leading-tight pr-2">
-          {label}
-        </span>
-
-        {/* Info icon — click to toggle tooltip */}
-        <div className="relative shrink-0" ref={tipRef}>
-          <button
-            onClick={() => setShowTip((v) => !v)}
-            aria-label={`Info about ${label}`}
-            className={`p-0.5 rounded-full transition-colors ${showTip ? "text-primary" : "text-[#9AA1A9] hover:text-primary"
-              }`}
-          >
-            <Info size={14} />
-          </button>
-
-          <AnimatePresence>
-            {showTip && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 4 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 4 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 top-full mt-2 w-52 bg-[#0d2e1d] text-white text-[11px] leading-relaxed p-3 rounded-xl shadow-2xl z-50 border border-white/10"
-              >
-                <div className="absolute -top-1.5 right-2 w-3 h-3 bg-[#0d2e1d] rotate-45 border-l border-t border-white/10" />
-                {tooltip}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      <div className="flex items-baseline gap-2">
-        <h3 className="text-2xl font-bold text-[#1A3C2A]">{value}</h3>
-        <div
-          className={`flex items-center gap-0.5 text-xs font-bold ${trend === "up" ? "text-[#133C27]" : "text-[#B31B27]"
-            }`}
+      <defs>
+        <linearGradient
+          id={gradientId}
+          x1="0"
+          y1="0"
+          x2="0"
+          y2="1"
         >
-          {trend === "up" ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-          <span>{Math.abs(change)}%</span>
-        </div>
-      </div>
+          <stop
+            offset="0%"
+            stopColor={color}
+            stopOpacity="0.18"
+          />
 
-      <p className="text-[10px] text-[#9AA1A9] mt-1 font-medium italic">vs previous period</p>
-    </motion.div>
+          <stop
+            offset="100%"
+            stopColor={color}
+            stopOpacity="0"
+          />
+        </linearGradient>
+      </defs>
+
+      <path
+        d={`${chart.path} L178 52 L4 52 Z`}
+        fill={`url(#${gradientId})`}
+      />
+
+      <path
+        d={chart.path}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+
+      <circle
+        cx="178"
+        cy={chart.endY}
+        r="5"
+        fill="white"
+        stroke={color}
+        strokeOpacity="0.3"
+        strokeWidth="3"
+      />
+
+      <circle
+        cx="178"
+        cy={chart.endY}
+        r="2.2"
+        fill={color}
+      />
+    </svg>
   );
 }
 
 export default function KPIGrid() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {kpiData.map((kpi, idx) => (
-        <KPICard key={kpi.label} {...kpi} index={idx} />
-      ))}
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      {kpiData.map((item, index) => {
+        const Icon = icons[index];
+        const style = toneStyles[item.tone];
+        const isDown = item.label === "Conversion Rate";
+        const isPipeline = item.label === "Pipeline";
+
+        return (
+          <motion.article
+            key={item.label}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: index * 0.04,
+              duration: 0.25,
+            }}
+            whileHover={{
+              y: -2,
+              boxShadow: "0 10px 25px rgba(15,23,42,0.07)",
+            }}
+            className="relative min-h-[190px] min-w-0 overflow-hidden rounded-[16px] border border-[#e8dfd2] bg-white p-4 shadow-[0_2px_6px_rgba(15,23,42,0.04)]"
+          >
+            <div className="grid grid-cols-[44px_minmax(0,1fr)] items-start gap-3">
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-full shadow-[0_2px_5px_rgba(15,23,42,0.07)] ${style.icon}`}
+              >
+                <Icon size={21} strokeWidth={1.8} />
+              </div>
+
+              <div className="min-w-0 pt-0.5">
+                <p className="text-[10px] font-bold uppercase leading-[1.1] tracking-[0.01em] text-[#15191d]">
+                  {item.label}
+                </p>
+
+                <p
+                  className={`mt-1 whitespace-nowrap font-bold leading-none tracking-tight text-[#101418] ${
+                    isPipeline ? "text-[18px]" : "text-[22px]"
+                  }`}
+                >
+                  {item.value}
+                </p>
+
+                {item.change ? (
+                  <div className="mt-2 flex flex-wrap items-start gap-x-1 text-[9px] leading-[1.15]">
+                    <span
+                      className={`flex shrink-0 items-center font-semibold ${
+                        isDown
+                          ? "text-red-500"
+                          : "text-emerald-600"
+                      }`}
+                    >
+                      {isDown ? (
+                        <TrendingDown
+                          size={10}
+                          strokeWidth={2.2}
+                        />
+                      ) : (
+                        <TrendingUp
+                          size={10}
+                          strokeWidth={2.2}
+                        />
+                      )}
+
+                      {item.change}
+                    </span>
+
+                    <span className="text-[#9aa0aa]">
+                      {item.detail}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-[9px] leading-[1.15] text-[#9aa0aa]">
+                    <span className="font-semibold text-red-500">
+                      21 overdue
+                    </span>
+
+                    <span> • 65 today</span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="absolute bottom-4 left-4 right-4 h-[44px]">
+              <Sparkline
+                index={index}
+                color={style.line}
+              />
+            </div>
+          </motion.article>
+        );
+      })}
     </div>
   );
 }

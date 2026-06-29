@@ -3,13 +3,6 @@
 import {
   LayoutDashboard,
   Users,
-  CalendarCheck,
-  User,
-  GitFork,
-  Mail,
-  CheckSquare,
-  BarChart3,
-  Building,
   Settings,
   Menu,
   Headset,
@@ -64,13 +57,6 @@ const VasiyamLogoSVG = () => (
 const items = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Lead Management", icon: Users, href: "/dashboard/leads" },
-  { label: "Site Visit Management", icon: CalendarCheck, href: "/dashboard/site-visits" },
-  { label: "Bookings", icon: User, href: "/dashboard/bookings" },
-  { label: "Sales Pipeline", icon: GitFork, href: "/dashboard/sales-pipeline" },
-  { label: "Inbox", icon: Mail, href: "/dashboard/inbox", badge: 5 },
-  { label: "Activities", icon: CheckSquare, href: "/dashboard/activities" },
-  { label: "Reports & Analytics", icon: BarChart3, href: "/dashboard/reports" },
-  { label: "Projects", icon: Building, href: "/dashboard/projects" },
   { label: "Settings", icon: Settings, href: "/dashboard/settings" },
 ];
 
@@ -176,25 +162,7 @@ export default function Sidebar() {
                   )}
                 </AnimatePresence>
 
-                <AnimatePresence>
-                  {!collapsed && item.badge && (
-                    <motion.span
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className={cn(
-                        "text-[9px] px-1.5 py-0.5 rounded-full font-black min-w-4 text-center",
-                        item.label === "Inbox"
-                          ? "bg-[#F59E0B] text-white"
-                          : active
-                          ? "bg-white/10 text-white"
-                          : "bg-[#C59A2C]/20 text-[#C59A2C]"
-                      )}
-                    >
-                      {item.badge}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                {/* Badge section removed since no items have badges */}
 
                 {/* Collapsed tooltip */}
                 {collapsed && (
@@ -222,7 +190,7 @@ export default function Sidebar() {
                 <Headset size={18} className="text-[#C59A2C] shrink-0" />
                 <div className="flex-1 text-left min-w-0">
                   <p className="text-xs font-bold text-white leading-tight">Need Help?</p>
-                  <p className="text-[9px] text-white/50 leading-tight">We're here to support you</p>
+                  <p className="text-[9px] text-white/50 leading-tight">We are here to support you</p>
                 </div>
               </div>
               <button

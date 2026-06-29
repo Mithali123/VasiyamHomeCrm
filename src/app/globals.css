@@ -61,3 +61,14 @@
     @apply px-4 py-2 bg-primary text-white rounded-lg transition-all hover:bg-primary-dark active:scale-95;
   }
 }
+
+/* Dashboard-only readability boost. The sidebar sits outside .dashboard-ui. */
+.dashboard-ui [class~="text-[6.5px]"] { font-size: 8.5px !important; }
+.dashboard-ui [class~="text-[7px]"] { font-size: 9px !important; }
+.dashboard-ui [class~="text-[7.5px]"] { font-size: 9.5px !important; }
+.dashboard-ui [class~="text-[8px]"] { font-size: 10px !important; }
+.dashboard-ui [class~="text-[8.5px]"] { font-size: 10.5px !important; }
+.dashboard-ui [class~="text-[9px]"] { font-size: 11px !important; }
+.dashboard-ui [class~="text-[10px]"] { font-size: 12px !important; }
+.dashboard-ui [class~="text-[11px]"] { font-size: 13px !important; }
+.dashboard-ui [class~="text-[12px]"] { font-size: 14px !important; }
