@@ -66,6 +66,7 @@ interface Lead {
   createdDate: string; // ISO date string
   preferredLocation?: string;
   remarks?: string;
+  avatar?: string;
 }
 
 // Initial mockup database matching the user's screenshot mockup EXACTLY
@@ -87,7 +88,8 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "Today, 3:00 PM",
     createdDate: "2026-06-25",
     preferredLocation: "Thoraipakkam",
-    remarks: "Very interested in 3BHK east-facing apartment. Clean prospect."
+    remarks: "Very interested in 3BHK east-facing apartment. Clean prospect.",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
   },
   {
     id: "LD-2414",
@@ -106,7 +108,8 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "Tomorrow, 11:00 AM",
     createdDate: "2026-06-25",
     preferredLocation: "Medavakkam",
-    remarks: "Responded to Meta advertisement. Shared project details over WhatsApp."
+    remarks: "Responded to Meta advertisement. Shared project details over WhatsApp.",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
   },
   {
     id: "LD-2413",
@@ -125,7 +128,8 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "28 Jun, 4:00 PM",
     createdDate: "2026-06-25",
     preferredLocation: "Velachery",
-    remarks: "Financing approved. Seeking 3BHK flats with wood work options."
+    remarks: "Financing approved. Seeking 3BHK flats with wood work options.",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
   },
   {
     id: "LD-2412",
@@ -144,7 +148,8 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "28 Jun, 11:00 AM",
     createdDate: "2026-06-24",
     preferredLocation: "Adyar",
-    remarks: "Wants premium duplex flats. Referral from existing customer."
+    remarks: "Wants premium duplex flats. Referral from existing customer.",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
   },
   {
     id: "LD-2411",
@@ -163,7 +168,8 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "29 Jun, 3:30 PM",
     createdDate: "2026-06-24",
     preferredLocation: "OMR Sholinganallur",
-    remarks: "Demanding discount on registrar charges. Discussing final rates."
+    remarks: "Demanding discount on registrar charges. Discussing final rates.",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
   },
   {
     id: "LD-2410",
@@ -182,7 +188,8 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "30 Jun, 10:00 AM",
     createdDate: "2026-06-24",
     preferredLocation: "Adyar",
-    remarks: "Enquiry through 99acres portal for 3BHK flat."
+    remarks: "Enquiry through 99acres portal for 3BHK flat.",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
   },
   {
     id: "LD-2409",
@@ -201,7 +208,8 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "30 Jun, 2:00 PM",
     createdDate: "2026-06-23",
     preferredLocation: "Velachery",
-    remarks: "High budget lead. Seeking premium top floor penthouse."
+    remarks: "High budget lead. Seeking premium top floor penthouse.",
+    avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
   }
 ];
 
@@ -215,11 +223,11 @@ const leadStages = ["New", "Contacted", "Qualified", "Site Visit", "Negotiation"
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="13"
-    height="13"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
-    fill="#1877F2"
     {...props}
+    fill="#1877F2"
   >
     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
   </svg>
@@ -228,8 +236,8 @@ const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="13"
-    height="13"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -247,21 +255,21 @@ const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="#25D366"
+    width="16"
+    height="16"
+    viewBox="0 0 448 512"
     {...props}
+    fill="#25D366"
   >
-    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.5-5.739-1.453L0 24h.057zm5.952-3.666l.328.195c1.7.1 3.32-.4 4.72-1.25l.338-.2 3.51.92-.938-3.42.23-.37c.93-1.48 1.42-3.19 1.42-4.94.002-5.18-4.17-9.4-9.3-9.4-4.51 0-8.6 3.73-9.28 8.12-.46 2.94.41 5.86 2.38 8.01l.25.28-1.5 5.48 5.61-1.47z" />
+    <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z" />
   </svg>
 );
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="13"
-    height="13"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     {...props}
@@ -276,8 +284,8 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const Acres99Icon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="13"
-    height="13"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     {...props}
@@ -314,6 +322,85 @@ const getSourceIcon = (source: string) => {
       return (props: any) => <Compass {...props} />;
     default:
       return (props: any) => <HelpCircle {...props} />;
+  }
+};
+
+// Styling configuration for Lead Source logo badges
+const getSourceBadgeStyles = (source: string) => {
+  switch (source) {
+    case "Website":
+      return {
+        bg: "bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800",
+        color: "text-slate-500 dark:text-slate-400",
+        iconColor: "#64748B"
+      };
+    case "99acres":
+      return {
+        bg: "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/40",
+        color: "text-blue-600 dark:text-blue-400",
+        iconColor: "#0056B3"
+      };
+    case "MagicBricks":
+      return {
+        bg: "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40",
+        color: "text-red-600 dark:text-red-400",
+        iconColor: "#EF4444"
+      };
+    case "Housing.com":
+      return {
+        bg: "bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40",
+        color: "text-rose-600 dark:text-rose-400",
+        iconColor: "#EC4899"
+      };
+    case "WhatsApp":
+      return {
+        bg: "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/40",
+        color: "text-emerald-600 dark:text-emerald-400",
+        iconColor: "#25D366"
+      };
+    case "Phone Call":
+      return {
+        bg: "bg-cyan-50 dark:bg-cyan-950/20 border-cyan-200 dark:border-cyan-900/40",
+        color: "text-cyan-600 dark:text-cyan-400",
+        iconColor: "#06B6D4"
+      };
+    case "Instagram":
+      return {
+        bg: "bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-900/40",
+        color: "text-pink-600 dark:text-pink-400",
+        iconColor: "#E1306C"
+      };
+    case "Facebook Ads":
+    case "Meta Ads":
+      return {
+        bg: "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/40",
+        color: "text-blue-600 dark:text-blue-400",
+        iconColor: "#1877F2"
+      };
+    case "Google Ads":
+      return {
+        bg: "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/40",
+        color: "text-amber-600 dark:text-amber-400",
+        iconColor: "#4285F4"
+      };
+    case "Referral":
+      return {
+        bg: "bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900/40",
+        color: "text-purple-600 dark:text-purple-400",
+        iconColor: "#8B5CF6"
+      };
+    case "Walk-in":
+      return {
+        bg: "bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/40",
+        color: "text-orange-600 dark:text-orange-400",
+        iconColor: "#D97706"
+      };
+    default:
+      return {
+        bg: "bg-gray-50 dark:bg-gray-900/40 border-gray-200 dark:border-gray-800",
+        color: "text-gray-500 dark:text-gray-400",
+        iconColor: "#6B7280"
+      };
   }
 };
 
@@ -529,9 +616,8 @@ function CustomSelect({ label, value, options, onChange, icon: Icon }: CustomDro
       >
         <div className="flex items-center gap-1.5 min-w-0">
           <Icon size={13} className="text-gray-400 dark:text-[#C59A2C] shrink-0" />
-          <span className="truncate text-gray-500 dark:text-gray-400">
-            {label === "Date Range" || label === "Score" || label === "Filters" ? "" : `${label}: `}
-            <span className="text-[#1F1F1F] dark:text-white font-bold">{value}</span>
+          <span className="truncate text-[#1F1F1F] dark:text-white font-bold">
+            {value}
           </span>
         </div>
         <ChevronDown size={12} className={cn("text-gray-400 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
@@ -581,10 +667,11 @@ export default function LeadsPage() {
   // Filter Bar states
   const [filterStatus, setFilterStatus] = useState("All Status");
   const [filterSource, setFilterSource] = useState("All Sources");
-  const [filterProject, setFilterProject] = useState("All Projects");
   const [filterRM, setFilterRM] = useState("All RMs");
-  const [filterScoreRange, setFilterScoreRange] = useState("Lead Score");
+  const [filterBudgetRange, setFilterBudgetRange] = useState("All Budgets");
+  const [filterScoreRange, setFilterScoreRange] = useState("Score");
   const [filterCreatedDate, setFilterCreatedDate] = useState("This Month");
+  const [filterFollowUpStatus, setFilterFollowUpStatus] = useState("All Follow-ups");
   const [sortBy, setSortBy] = useState("newest");
 
   // Modals visibility
@@ -595,6 +682,15 @@ export default function LeadsPage() {
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
   const [bulkAssignTarget, setBulkAssignTarget] = useState<string>("");
   const [rowActionsOpenId, setRowActionsOpenId] = useState<string | null>(null);
+
+  // Bulk Mode and RM Transfer states
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [isTransferRMOpen, setIsTransferRMOpen] = useState(false);
+  const [transferFromRM, setTransferFromRM] = useState("Arun Kumar");
+  const [transferToRM, setTransferToRM] = useState("Meera Nair");
+  const [transferProject, setTransferProject] = useState("All Projects");
+  const [transferStage, setTransferStage] = useState("All Stages");
+  const [transferStatus, setTransferStatus] = useState("");
 
   // Form Validation & Input
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -621,6 +717,24 @@ export default function LeadsPage() {
     window.addEventListener("leads-refresh", handleRefreshEvent);
     return () => {
       window.removeEventListener("leads-refresh", handleRefreshEvent);
+    };
+  }, []);
+
+  // Listen to the custom global search event from Header
+  useEffect(() => {
+    // Sync initial search query from header input if any
+    const headerInput = document.getElementById("search-input") as HTMLInputElement;
+    if (headerInput && headerInput.value) {
+      setSearchQuery(headerInput.value);
+    }
+
+    const handleGlobalSearch = (e: Event) => {
+      const query = (e as CustomEvent).detail;
+      setSearchQuery(query || "");
+    };
+    window.addEventListener("global-search", handleGlobalSearch);
+    return () => {
+      window.removeEventListener("global-search", handleGlobalSearch);
     };
   }, []);
 
@@ -848,6 +962,75 @@ export default function LeadsPage() {
     showToast("success", "Leads Imported Successfully.");
   };
 
+  const handleOpenTransferRM = () => {
+    setTransferFromRM("Arun Kumar");
+    setTransferToRM("Meera Nair");
+    setTransferProject("All Projects");
+    setTransferStage("All Stages");
+    setTransferStatus("");
+    setIsTransferRMOpen(true);
+  };
+
+  const handleTransferSubmit = () => {
+    if (transferFromRM === transferToRM) {
+      showToast("error", "From RM and To RM must be different.");
+      return;
+    }
+    const count = leadsToTransfer.length;
+    if (count === 0) {
+      showToast("error", "No matching leads found to transfer.");
+      return;
+    }
+
+    if (confirm(`Transfer ${count} leads from ${transferFromRM} to ${transferToRM}?`)) {
+      setLeads((prev) =>
+        prev.map((l) => {
+          const isFromRM = l.rm === transferFromRM;
+          const isProjectMatch = transferProject === "All Projects" || l.project === transferProject;
+          const isStageMatch = transferStage === "All Stages" || l.stage === transferStage;
+          let isStatusMatch = true;
+          if (transferStatus.trim()) {
+            const query = transferStatus.toLowerCase().trim();
+            const stageMatch = l.stage.toLowerCase().includes(query);
+            const sourceMatch = l.source.toLowerCase().includes(query);
+            const projectMatch = l.project.toLowerCase().includes(query);
+            const nameMatch = l.name.toLowerCase().includes(query);
+            isStatusMatch = stageMatch || sourceMatch || projectMatch || nameMatch;
+          }
+
+          if (isFromRM && isProjectMatch && isStageMatch && isStatusMatch) {
+            return {
+              ...l,
+              rm: transferToRM,
+              lastActivityTime: "Just now",
+              lastActivityDesc: `Portfolio transferred to ${transferToRM}`
+            };
+          }
+          return l;
+        })
+      );
+      showToast("success", `Transferred ${count} leads successfully.`);
+      setIsTransferRMOpen(false);
+    }
+  };
+
+  const leadsToTransfer = useMemo(() => {
+    return leads.filter((lead) => {
+      if (lead.rm !== transferFromRM) return false;
+      if (transferProject !== "All Projects" && lead.project !== transferProject) return false;
+      if (transferStage !== "All Stages" && lead.stage !== transferStage) return false;
+      if (transferStatus.trim()) {
+        const query = transferStatus.toLowerCase().trim();
+        const stageMatch = lead.stage.toLowerCase().includes(query);
+        const sourceMatch = lead.source.toLowerCase().includes(query);
+        const projectMatch = lead.project.toLowerCase().includes(query);
+        const nameMatch = lead.name.toLowerCase().includes(query);
+        if (!stageMatch && !sourceMatch && !projectMatch && !nameMatch) return false;
+      }
+      return true;
+    });
+  }, [leads, transferFromRM, transferProject, transferStage, transferStatus]);
+
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       setSelectedLeadIds(paginatedLeads.map((l) => l.id));
@@ -866,10 +1049,11 @@ export default function LeadsPage() {
     setSearchQuery("");
     setFilterStatus("All Status");
     setFilterSource("All Sources");
-    setFilterProject("All Projects");
     setFilterRM("All RMs");
-    setFilterScoreRange("Lead Score");
+    setFilterBudgetRange("All Budgets");
+    setFilterScoreRange("Score");
     setFilterCreatedDate("This Month");
+    setFilterFollowUpStatus("All Follow-ups");
     setSortBy("newest");
     setSelectedLeadIds([]);
     setCurrentPage(1);
@@ -886,9 +1070,8 @@ export default function LeadsPage() {
         (l) =>
           l.name.toLowerCase().includes(q) ||
           l.mobile.includes(q) ||
-          l.email.toLowerCase().includes(q) ||
-          l.id.toLowerCase().includes(q) ||
-          l.project.toLowerCase().includes(q)
+          l.project.toLowerCase().includes(q) ||
+          l.id.toLowerCase().includes(q)
       );
     }
 
@@ -904,17 +1087,48 @@ export default function LeadsPage() {
       result = result.filter((l) => l.source === filterSource);
     }
 
-    if (filterProject !== "All Projects") {
-      result = result.filter((l) => l.project === filterProject);
+    if (filterBudgetRange !== "All Budgets") {
+      if (filterBudgetRange === "< 50 Lakhs") {
+        result = result.filter((l) => l.budget < 5000000);
+      } else if (filterBudgetRange === "50 Lakhs - 1 Crore") {
+        result = result.filter((l) => l.budget >= 5000000 && l.budget <= 10000000);
+      } else if (filterBudgetRange === "1 - 2 Crores") {
+        result = result.filter((l) => l.budget > 10000000 && l.budget <= 20000000);
+      } else if (filterBudgetRange === "> 2 Crores") {
+        result = result.filter((l) => l.budget > 20000000);
+      }
     }
 
-    if (filterScoreRange !== "Lead Score") {
-      if (filterScoreRange === "Hot (80+)") {
-        result = result.filter((l) => l.score >= 80);
-      } else if (filterScoreRange === "Warm (50-79)") {
-        result = result.filter((l) => l.score >= 50 && l.score < 80);
-      } else if (filterScoreRange === "Cold (<50)") {
-        result = result.filter((l) => l.score < 50);
+    if (filterScoreRange !== "Score") {
+      if (filterScoreRange === "Hot Lead (80-100)") {
+        result = result.filter((l) => l.score >= 80 && l.score <= 100);
+      } else if (filterScoreRange === "Warm Lead (60-79)") {
+        result = result.filter((l) => l.score >= 60 && l.score <= 79);
+      } else if (filterScoreRange === "Medium Lead (40-59)") {
+        result = result.filter((l) => l.score >= 40 && l.score <= 59);
+      } else if (filterScoreRange === "Cold Lead (<40)") {
+        result = result.filter((l) => l.score < 40);
+      }
+    }
+
+    if (filterCreatedDate !== "All Dates" && filterCreatedDate !== "This Month") {
+      // Keep basic Created date filter defaults if needed
+    }
+
+    if (filterFollowUpStatus !== "All Follow-ups") {
+      if (filterFollowUpStatus === "Today") {
+        result = result.filter((l) => l.nextFollowupText.toLowerCase().includes("today"));
+      } else if (filterFollowUpStatus === "Tomorrow") {
+        result = result.filter((l) => l.nextFollowupText.toLowerCase().includes("tomorrow"));
+      } else if (filterFollowUpStatus === "Overdue") {
+        result = result.filter((l) => {
+          if (!l.nextFollowupText || l.nextFollowupText === "None") return false;
+          const isToday = l.nextFollowupText.toLowerCase().includes("today");
+          const isTomorrow = l.nextFollowupText.toLowerCase().includes("tomorrow");
+          return !isToday && !isTomorrow;
+        });
+      } else if (filterFollowUpStatus === "No Follow-up") {
+        result = result.filter((l) => !l.nextFollowupText || l.nextFollowupText === "None");
       }
     }
 
@@ -928,7 +1142,7 @@ export default function LeadsPage() {
     });
 
     return result;
-  }, [leads, searchQuery, filterStatus, filterRM, filterSource, filterProject, filterScoreRange, filterCreatedDate, sortBy]);
+  }, [leads, searchQuery, filterStatus, filterRM, filterSource, filterBudgetRange, filterScoreRange, filterCreatedDate, filterFollowUpStatus, sortBy]);
 
   // Paginated Rows
   const paginatedLeads = useMemo(() => {
@@ -1091,21 +1305,21 @@ export default function LeadsPage() {
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={handleImportLeads}
-                className="flex flex-col items-center justify-center p-2 rounded-xl border border-emerald-200 bg-emerald-50/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 text-[9px] font-black gap-1.5 transition-all select-none"
+                className="flex flex-col items-center justify-center p-2 rounded-xl border border-emerald-200 bg-emerald-50/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 text-[9px] font-black gap-1.5 transition-all select-none cursor-pointer"
               >
                 <Upload size={14} className="stroke-[2.5]" />
                 <span>Import Leads</span>
               </button>
               <button
-                onClick={handleOpenAssignBulk}
-                className="flex flex-col items-center justify-center p-2 rounded-xl border border-amber-250 bg-amber-50/20 hover:bg-amber-50 dark:hover:bg-amber-950/20 text-amber-700 dark:text-[#C59A2C] text-[9px] font-black gap-1.5 transition-all select-none"
+                onClick={handleOpenTransferRM}
+                className="flex flex-col items-center justify-center p-2 rounded-xl border border-purple-200 bg-purple-50/20 hover:bg-purple-50 dark:hover:bg-purple-950/20 text-purple-700 dark:text-purple-300 text-[9px] font-black gap-1.5 transition-all select-none cursor-pointer"
               >
-                <UserCheck size={14} className="stroke-[2.5]" />
-                <span>Assign Leads</span>
+                <RefreshCw size={14} className="stroke-[2.5]" />
+                <span>Transfer RM</span>
               </button>
               <button
                 onClick={handleExportLeads}
-                className="flex flex-col items-center justify-center p-2 rounded-xl border border-blue-200 bg-blue-50/20 hover:bg-blue-50 dark:hover:bg-blue-950/20 text-blue-700 dark:text-blue-300 text-[9px] font-black gap-1.5 transition-all select-none"
+                className="flex flex-col items-center justify-center p-2 rounded-xl border border-blue-200 bg-blue-50/20 hover:bg-blue-50 dark:hover:bg-blue-950/20 text-blue-700 dark:text-blue-300 text-[9px] font-black gap-1.5 transition-all select-none cursor-pointer"
               >
                 <Download size={14} className="stroke-[2.5]" />
                 <span>Export Leads</span>
@@ -1124,20 +1338,8 @@ export default function LeadsPage() {
         {/* Aligned Row of Filters */}
         <div className="w-full flex flex-wrap items-center gap-2 text-xs">
           
-          {/* Search leads */}
-          <div className="relative flex-1 sm:flex-initial sm:w-[160px] min-w-[130px]">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search leads..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8.5 pr-3 py-2 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0D2E1D] rounded-xl text-xs w-full text-[#1F1F1F] dark:text-white focus:outline-none focus:border-[#C59A2C] transition-all font-semibold"
-            />
-          </div>
-
           {/* Status custom select */}
-          <div className="w-full sm:w-[135px] shrink-0">
+          <div className="w-full sm:w-[125px] shrink-0">
             <CustomSelect
               label="Status"
               value={filterStatus}
@@ -1148,7 +1350,7 @@ export default function LeadsPage() {
           </div>
 
           {/* Sources custom select */}
-          <div className="w-full sm:w-[135px] shrink-0">
+          <div className="w-full sm:w-[125px] shrink-0">
             <CustomSelect
               label="Sources"
               value={filterSource}
@@ -1158,19 +1360,8 @@ export default function LeadsPage() {
             />
           </div>
 
-          {/* Projects custom select */}
-          <div className="w-full sm:w-[135px] shrink-0">
-            <CustomSelect
-              label="Projects"
-              value={filterProject}
-              options={["All Projects", ...projectsList]}
-              icon={Building}
-              onChange={setFilterProject}
-            />
-          </div>
-
           {/* RMs custom select */}
-          <div className="w-full sm:w-[135px] shrink-0">
+          <div className="w-full sm:w-[125px] shrink-0">
             <CustomSelect
               label="RMs"
               value={filterRM}
@@ -1180,19 +1371,30 @@ export default function LeadsPage() {
             />
           </div>
 
-          {/* Lead Score custom select */}
-          <div className="w-full sm:w-[125px] shrink-0">
+          {/* Budget Range custom select */}
+          <div className="w-full sm:w-[130px] shrink-0">
+            <CustomSelect
+              label="Budget"
+              value={filterBudgetRange}
+              options={["All Budgets", "< 50 Lakhs", "50 Lakhs - 1 Crore", "1 - 2 Crores", "> 2 Crores"]}
+              icon={DollarSign}
+              onChange={setFilterBudgetRange}
+            />
+          </div>
+
+          {/* Score Range custom select */}
+          <div className="w-full sm:w-[135px] shrink-0">
             <CustomSelect
               label="Score"
               value={filterScoreRange}
-              options={["Lead Score", "Hot (80+)", "Warm (50-79)", "Cold (<50)"]}
+              options={["Score", "Hot Lead (80-100)", "Warm Lead (60-79)", "Medium Lead (40-59)", "Cold Lead (<40)"]}
               icon={Star}
               onChange={setFilterScoreRange}
             />
           </div>
 
           {/* Date Range custom select */}
-          <div className="w-full sm:w-[130px] shrink-0">
+          <div className="w-full sm:w-[120px] shrink-0">
             <CustomSelect
               label="Date Range"
               value={filterCreatedDate}
@@ -1202,12 +1404,51 @@ export default function LeadsPage() {
             />
           </div>
 
-          {/* More Filters & Clear Action Buttons */}
+          {/* Follow-up Status custom select */}
+          <div className="w-full sm:w-[130px] shrink-0">
+            <CustomSelect
+              label="Follow-up"
+              value={filterFollowUpStatus}
+              options={["All Follow-ups", "Today", "Tomorrow", "Overdue", "No Follow-up"]}
+              icon={Clock}
+              onChange={setFilterFollowUpStatus}
+            />
+          </div>
+
+          {/* Action Buttons */}
           <div className="flex items-center gap-1.5 ml-auto shrink-0 w-full sm:w-auto justify-end">
-            <button className="flex items-center justify-center gap-1.5 py-2 px-3 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0D2E1D] rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:border-primary transition-all shadow-sm shrink-0">
-              <SlidersHorizontal size={12} />
-              <span>More Filters</span>
-            </button>
+            {/* Table/Bulk Toggle */}
+            <div className="flex items-center rounded-xl bg-[#F8F5EE] dark:bg-white/5 p-0.5 border border-gray-250 dark:border-white/10 text-xs shrink-0 select-none mr-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBulkMode(false);
+                  setSelectedLeadIds([]);
+                }}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-[9px] font-black transition-all cursor-pointer",
+                  !isBulkMode 
+                    ? "bg-[#133C27] text-white shadow-sm" 
+                    : "text-gray-500 dark:text-gray-400 hover:text-[#133C27] dark:hover:text-white"
+                )}
+              >
+                Table
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBulkMode(true);
+                }}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-[9px] font-black transition-all cursor-pointer",
+                  isBulkMode 
+                    ? "bg-[#133C27] text-white shadow-sm" 
+                    : "text-gray-500 dark:text-gray-400 hover:text-[#133C27] dark:hover:text-white"
+                )}
+              >
+                Bulk
+              </button>
+            </div>
             <button
               onClick={handleClearFilters}
               className="flex items-center justify-center gap-1 py-2 px-2.5 border border-transparent rounded-xl text-xs font-bold text-gray-500 hover:text-primary dark:hover:text-[#C59A2C] transition-colors pl-1 shrink-0"
@@ -1220,15 +1461,15 @@ export default function LeadsPage() {
       </div>
 
       {/* ──────────────────────────────────────────────────────── */}
-      {/* 3. BULK OPERATION BAR (Shown only when selected) */}
+      {/* 3. BULK OPERATION BAR (Shown when Bulk Mode is active) */}
       {/* ──────────────────────────────────────────────────────── */}
       <AnimatePresence>
-        {selectedLeadIds.length > 0 && (
+        {isBulkMode && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col sm:flex-row sm:items-center justify-between bg-[#F8F5EE] dark:bg-white/5 p-2.5 px-4 rounded-xl border border-[#E8E2D6] dark:border-white/10 shadow-sm gap-2"
+            className="flex flex-col sm:flex-row sm:items-center justify-between bg-[#F8F5EE] dark:bg-white/5 p-2.5 px-4 rounded-xl border border-[#E8E2D6] dark:border-white/10 shadow-sm gap-2 mb-3"
           >
             {/* Left side actions */}
             <div className="flex flex-wrap items-center gap-3">
@@ -1236,8 +1477,8 @@ export default function LeadsPage() {
                 <input
                   type="checkbox"
                   className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5 accent-[#133C27] cursor-pointer"
-                  checked={true}
-                  onChange={() => setSelectedLeadIds([])}
+                  checked={paginatedLeads.length > 0 && paginatedLeads.every((l) => selectedLeadIds.includes(l.id))}
+                  onChange={handleSelectAll}
                 />
                 <span className="text-xs font-extrabold text-[#133C27] dark:text-[#C59A2C] pl-1 whitespace-nowrap">
                   {selectedLeadIds.length} leads selected
@@ -1258,7 +1499,7 @@ export default function LeadsPage() {
                   className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-gray-200 dark:border-white/15 bg-white dark:bg-[#0D2E1D] text-[11px] font-bold text-gray-700 dark:text-white shadow-sm hover:bg-gray-50 transition-all select-none cursor-pointer"
                 >
                   <Download size={12} className="text-[#C59A2C]" />
-                  <span>Export</span>
+                  <span>Export Selected</span>
                 </button>
 
                 <button
@@ -1266,7 +1507,7 @@ export default function LeadsPage() {
                   className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-white dark:bg-[#0D2E1D] border border-red-200 dark:border-red-500/25 text-[11px] font-bold text-red-600 dark:text-red-400 hover:bg-red-50 transition-all select-none cursor-pointer"
                 >
                   <Trash2 size={12} />
-                  <span>Delete</span>
+                  <span>Delete Selected</span>
                 </button>
               </div>
             </div>
@@ -1283,10 +1524,13 @@ export default function LeadsPage() {
               <div className="h-4 w-px bg-gray-300 dark:bg-white/15" />
 
               <button
-                onClick={() => setSelectedLeadIds([])}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-white/10 rounded cursor-pointer"
+                onClick={() => {
+                  setIsBulkMode(false);
+                  setSelectedLeadIds([]);
+                }}
+                className="flex items-center gap-1 py-1.5 px-3 border border-gray-300 dark:border-white/20 rounded-lg text-[10px] font-black text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-all cursor-pointer"
               >
-                <X size={14} className="text-gray-400" />
+                Cancel Bulk Mode
               </button>
             </div>
           </motion.div>
@@ -1341,15 +1585,17 @@ export default function LeadsPage() {
               <thead>
                 <tr className="border-b border-[#E8E2D6] dark:border-white/10 bg-gray-50/70 dark:bg-white/5 text-[10px] font-bold text-[#6B7280] dark:text-gray-400 uppercase tracking-wider sticky top-0 backdrop-blur-md z-10">
                   {/* Checkbox Header Column (Sticky Left) */}
-                  <th className="py-3 px-4 w-10 sticky left-0 bg-gray-50 dark:bg-[#0D2E1D] z-20">
-                    <input
-                      type="checkbox"
-                      className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5 accent-[#133C27] cursor-pointer"
-                      checked={paginatedLeads.length > 0 && paginatedLeads.every((l) => selectedLeadIds.includes(l.id))}
-                      onChange={handleSelectAll}
-                    />
-                  </th>
-                  <th className="py-3 px-3 w-16">Lead</th>
+                  {isBulkMode && (
+                    <th className="py-3 pl-6 pr-4 w-10 sticky left-0 bg-gray-50 dark:bg-[#0D2E1D] z-20">
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5 accent-[#133C27] cursor-pointer"
+                        checked={paginatedLeads.length > 0 && paginatedLeads.every((l) => selectedLeadIds.includes(l.id))}
+                        onChange={handleSelectAll}
+                      />
+                    </th>
+                  )}
+                  <th className={cn("py-3 px-3 w-16", !isBulkMode && "pl-6")}>Lead</th>
                   <th className="py-3 px-4">Contact</th>
                   <th className="py-3 px-3">Source</th>
                   <th className="py-3 px-3">Project</th>
@@ -1375,33 +1621,45 @@ export default function LeadsPage() {
                       )}
                     >
                       {/* Checkbox Cell (Sticky Left) */}
-                      <td className="py-3 px-4 sticky left-0 bg-white dark:bg-[#0D2E1D] group-hover:bg-[#FBF9F4] dark:group-hover:bg-[#0E3521] z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] transition-colors">
-                        <input
-                          type="checkbox"
-                          className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5 accent-[#133C27] cursor-pointer"
-                          checked={isChecked}
-                          onChange={() => handleSelectRow(lead.id)}
-                        />
-                      </td>
-
+                      {isBulkMode && (
+                        <td className="py-3 pl-6 pr-4 sticky left-0 bg-white dark:bg-[#0D2E1D] group-hover:bg-[#FBF9F4] dark:group-hover:bg-[#0E3521] z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] transition-colors">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-primary focus:ring-primary h-3.5 w-3.5 accent-[#133C27] cursor-pointer"
+                            checked={isChecked}
+                            onChange={() => handleSelectRow(lead.id)}
+                          />
+                        </td>
+                      )}
+                      
                       {/* Lead (Avatar + Name + ID underneath) */}
-                      <td className="py-3 px-3">
+                      <td className={cn("py-3 px-3", !isBulkMode && "pl-6")}>
                         <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "w-8 h-8 rounded-full border flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm transition-all group-hover:scale-105",
-                            getAvatarColorClass(lead.name)
-                          )}>
-                            {getInitials(lead.name)}
+                          <div className="w-8 h-8 rounded-full border border-gray-200 dark:border-white/10 shrink-0 overflow-hidden shadow-sm transition-all group-hover:scale-105 flex items-center justify-center">
+                            {lead.avatar ? (
+                              <img
+                                src={lead.avatar}
+                                alt={lead.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className={cn(
+                                "w-full h-full flex items-center justify-center text-[10px] font-black text-white",
+                                getAvatarColorClass(lead.name)
+                              )}>
+                                {getInitials(lead.name)}
+                              </div>
+                            )}
                           </div>
-                          <div className="flex flex-col text-left">
+                          <div className="flex items-center gap-1.5 text-left whitespace-nowrap">
                             <span 
                               className="font-extrabold text-primary dark:text-[#C59A2C] leading-tight hover:underline cursor-pointer"
                               onClick={() => handleOpenEdit(lead)}
                             >
                               {lead.name}
                             </span>
-                            <span className="text-[10px] text-gray-400 font-bold mt-0.5">
-                              {lead.id}
+                            <span className="text-[10px] text-gray-400 font-bold">
+                              ({lead.id})
                             </span>
                           </div>
                         </div>
@@ -1419,11 +1677,19 @@ export default function LeadsPage() {
                         </div>
                       </td>
 
-                      {/* Source with Branded Icon */}
-                      <td className="py-3 px-3 whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gray-750 dark:text-gray-300">
-                          <SrcIcon className="shrink-0" />
-                          <span>{lead.source}</span>
+                      {/* Source badge with colored brand icon and tooltip */}
+                      <td className="py-3 px-3">
+                        <div className="flex justify-start">
+                          <div
+                            title={lead.source}
+                            className={cn(
+                              "w-8 h-8 rounded-xl border flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-all hover:scale-105 cursor-pointer",
+                              getSourceBadgeStyles(lead.source).bg,
+                              getSourceBadgeStyles(lead.source).color
+                            )}
+                          >
+                            <SrcIcon size={16} stroke={getSourceBadgeStyles(lead.source).iconColor} className="shrink-0" />
+                          </div>
                         </div>
                       </td>
 
@@ -2251,6 +2517,168 @@ export default function LeadsPage() {
                   className="px-5 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-[#184B31] shadow-md shadow-primary/10"
                 >
                   Assign Manager
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ──────────────────────────────────────────────────────── */}
+      {/* 9. TRANSFER RELATIONSHIP MANAGER MODAL */}
+      {/* ──────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {isTransferRMOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsTransferRMOpen(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ type: "spring", damping: 22, stiffness: 220 }}
+              className="bg-white dark:bg-[#0D2E1D] rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 w-full max-w-md z-10 overflow-hidden flex flex-col"
+            >
+              <div className="px-6 py-4 border-b border-gray-150 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 flex justify-between items-center">
+                <div className="flex items-center gap-2 text-primary dark:text-[#C59A2C]">
+                  <RefreshCw size={18} />
+                  <h3 className="font-extrabold text-sm uppercase tracking-wide">
+                    Transfer RM Portfolio
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setIsTransferRMOpen(false)}
+                  className="p-1.5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X size={18} className="text-gray-400 dark:text-white/60" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                  Bulk transfer leads from one relationship manager to another based on matching filters. This is useful for reassigning portfolios when an RM goes on leave.
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">
+                      From RM
+                    </label>
+                    <select
+                      value={transferFromRM}
+                      onChange={(e) => setTransferFromRM(e.target.value)}
+                      className="py-2.5 px-3 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d2e1d] rounded-xl text-xs text-[#1F1F1F] dark:text-white focus:outline-none focus:border-[#C59A2C]"
+                    >
+                      {relationshipManagers.map((rm) => (
+                        <option key={rm} value={rm}>
+                          {rm}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">
+                      To RM
+                    </label>
+                    <select
+                      value={transferToRM}
+                      onChange={(e) => setTransferToRM(e.target.value)}
+                      className="py-2.5 px-3 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d2e1d] rounded-xl text-xs text-[#1F1F1F] dark:text-white focus:outline-none focus:border-[#C59A2C]"
+                    >
+                      {relationshipManagers.map((rm) => (
+                        <option key={rm} value={rm}>
+                          {rm}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">
+                      Project
+                    </label>
+                    <select
+                      value={transferProject}
+                      onChange={(e) => setTransferProject(e.target.value)}
+                      className="py-2.5 px-3 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d2e1d] rounded-xl text-xs text-[#1F1F1F] dark:text-white focus:outline-none focus:border-[#C59A2C]"
+                    >
+                      <option value="All Projects">All Projects</option>
+                      {projectsList.map((proj) => (
+                        <option key={proj} value={proj}>
+                          {proj}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">
+                      Lead Stage
+                    </label>
+                    <select
+                      value={transferStage}
+                      onChange={(e) => setTransferStage(e.target.value)}
+                      className="py-2.5 px-3 border border-gray-250 dark:border-white/10 bg-white dark:bg-[#0d2e1d] rounded-xl text-xs text-[#1F1F1F] dark:text-white focus:outline-none focus:border-[#C59A2C]"
+                    >
+                      <option value="All Stages">All Stages</option>
+                      {leadStages.map((st) => (
+                        <option key={st} value={st}>
+                          {st}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">
+                    Status (Optional filter keyword)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Website, Facebook, Called..."
+                    value={transferStatus}
+                    onChange={(e) => setTransferStatus(e.target.value)}
+                    className="py-2.5 px-3 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d2e1d] rounded-xl text-xs text-[#1F1F1F] dark:text-white focus:outline-none focus:border-[#C59A2C]"
+                  />
+                </div>
+
+                {/* Live Preview Card */}
+                <div className="p-4 rounded-xl border border-amber-255 bg-amber-50/20 dark:bg-white/5 flex items-center justify-between shadow-sm">
+                  <div className="flex flex-col text-left">
+                    <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      Total Leads to Transfer
+                    </span>
+                    <span className="text-2xl font-black text-[#133C27] dark:text-[#C59A2C] mt-0.5">
+                      {leadsToTransfer.length}
+                    </span>
+                  </div>
+                  <Users size={24} className="text-[#C59A2C]/60" />
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-gray-150 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 flex gap-2 justify-end">
+                <button
+                  onClick={() => setIsTransferRMOpen(false)}
+                  className="px-4 py-2 border border-gray-250 dark:border-white/10 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleTransferSubmit}
+                  disabled={leadsToTransfer.length === 0 || transferFromRM === transferToRM}
+                  className="px-5 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-[#184B31] shadow-md shadow-primary/10 disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer"
+                >
+                  Transfer Leads
                 </button>
               </div>
             </motion.div>

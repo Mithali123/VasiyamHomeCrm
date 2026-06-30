@@ -97,14 +97,14 @@ export function LiveLeadStatus() {
   const router = useRouter();
 
   const handleStatusClick = (status: string) => {
-    router.push(`/leads?status=${encodeURIComponent(status)}`);
+    router.push(`/dashboard/leads?status=${encodeURIComponent(status)}`);
   };
 
   return (
     <Card className="h-full">
       <div className="mb-3 flex items-start justify-between gap-4">
         <Title title="Live Lead Status" subtitle="Real-time distribution of leads" />
-        <ViewAll path="/leads" />
+        <ViewAll path="/dashboard/leads" />
       </div>
 
       <div className="grid grid-cols-4 gap-x-3 gap-y-3">
@@ -205,13 +205,15 @@ export function RecentLeads() {
   const router = useRouter();
 
   const handleLeadClick = (leadName: string) => {
-    const slug = leadName.toLowerCase().replaceAll(" ", "-");
-    router.push(`/leads/${slug}`);
+    router.push(`/dashboard/leads`);
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("global-search", { detail: leadName }));
+    }, 100);
   };
 
   const handleStatusClick = (status: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    router.push(`/leads?status=${encodeURIComponent(status)}`);
+    router.push(`/dashboard/leads?status=${encodeURIComponent(status)}`);
   };
 
   const columns =
@@ -221,7 +223,7 @@ export function RecentLeads() {
     <Card className="h-full overflow-hidden">
       <div className="mb-3 flex items-start justify-between gap-4">
         <Title title="Recent Leads" subtitle="Latest leads added to the system" />
-        <ViewAll path="/leads" />
+        <ViewAll path="/dashboard/leads" />
       </div>
 
       <div className="w-full overflow-x-auto pb-1">

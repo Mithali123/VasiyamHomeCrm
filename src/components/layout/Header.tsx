@@ -139,6 +139,7 @@ export default function Header() {
   // Search handler
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+    window.dispatchEvent(new CustomEvent("global-search", { detail: query }));
     if (query.trim().length <= 1) {
       setSearchResults([]);
       setShowSearchResults(false);
@@ -181,10 +182,14 @@ export default function Header() {
   const handleSearchResultClick = (result: SearchResult) => {
     setShowSearchResults(false);
     setSearchQuery("");
+    window.dispatchEvent(new CustomEvent("global-search", { detail: "" }));
 
-    if (result.type === "Lead") router.push(`/leads/${result.id}`);
-    if (result.type === "RM") router.push(`/rm/${result.id}`);
-    if (result.type === "Project") router.push(`/projects/${result.id}`);
+    if (result.type === "Lead" || result.type === "RM" || result.type === "Project") {
+      router.push(`/dashboard/leads`);
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("global-search", { detail: result.name }));
+      }, 100);
+    }
   };
 
   // Profile handlers

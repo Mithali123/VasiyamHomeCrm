@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Award, CalendarDays, TrendingUp, Users } from "lucide-react";
+import { Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Sector, Tooltip, XAxis, YAxis } from "recharts";
+import { 
+  Award, 
+  CalendarDays, 
+  TrendingUp, 
+  Users,
+} from "lucide-react";
 import { funnelStages, leadSources, leadTrendData } from "@/mock/dashboard";
-import { useRouter } from "next/navigation";
 
 // Helper Components
 const CardTitle = ({
@@ -29,111 +33,248 @@ const CardTitle = ({
 
 // Sales Funnel Widget
 export function SalesFunnel() {
-  const router = useRouter();
-  const [funnelPeriod, setFunnelPeriod] = useState("This Month");
+  const [hoveredStage, setHoveredStage] = useState<string | null>(null);
 
-  const handleFunnelPeriodChange = () => {
-    const periods = ["This Month", "Last Month", "This Quarter", "This Year"];
-    const currentIndex = periods.indexOf(funnelPeriod);
-    const nextIndex = (currentIndex + 1) % periods.length;
-    setFunnelPeriod(periods[nextIndex]);
-    console.log(`Funnel period changed to: ${periods[nextIndex]}`);
+  const X_center = 110;
+  const W_max = 165;
+  const W_min = 30;
+  const H = 210;
+  const BAND_H = 23;
+  const BAND_OFFSET = 4;
+
+  const w = (y: number) => W_max - (W_max - W_min) * (y / H);
+
+  // 3D cone perspective: curve depth proportional to band width
+  // Wider band = deeper ellipse arc (like looking into a 3D funnel from above)
+  const getCv = (width: number) => width * 0.07;
+
+  const getFrontSegmentPath = (index: number) => {
+    const y1 = index * (BAND_H + BAND_OFFSET) + BAND_OFFSET;
+    const y2 = y1 + BAND_H;
+    const w1 = w(y1);
+    const w2 = w(y2);
+    const x_tl = X_center - w1 / 2;
+    const x_tr = X_center + w1 / 2;
+    const x_bl = X_center - w2 / 2;
+    const x_br = X_center + w2 / 2;
+    const cvTop    = getCv(w1); // top arc: wide band = big curve
+    const cvBottom = getCv(w2); // bottom arc: narrower = less curve
+    return [
+      `M ${x_tl} ${y1}`,
+      `Q ${X_center} ${y1 - cvTop} ${x_tr} ${y1}`,    // top rim bows UP
+      `L ${x_br} ${y2}`,
+      `Q ${X_center} ${y2 + cvBottom} ${x_bl} ${y2}`,  // bottom rim bows DOWN
+      `Z`,
+    ].join(' ');
   };
 
-  const handleConversionClick = () => {
-    console.log("Opening conversion details...");
-    router.push("/analytics/conversion");
+  // White separator drawn as a curved path that perfectly bridges
+  // the bottom arc of band i and top arc of band i+1
+  const getWhiteSeparator = (index: number) => {
+    if (index >= funnelStages.length - 1) return null;
+    const y2 = index * (BAND_H + BAND_OFFSET) + BAND_OFFSET + BAND_H; // bottom of band i
+    const y1n = (index + 1) * (BAND_H + BAND_OFFSET) + BAND_OFFSET;   // top of band i+1
+    const w2  = w(y2);
+    const w1n = w(y1n);
+    const cv2  = getCv(w2);
+    const cv1n = getCv(w1n);
+    const d = [
+      `M ${X_center - w2 / 2} ${y2}`,
+      `Q ${X_center} ${y2 + cv2} ${X_center + w2 / 2} ${y2}`,     // bottom arc of band i
+      `L ${X_center + w1n / 2} ${y1n}`,
+      `Q ${X_center} ${y1n - cv1n} ${X_center - w1n / 2} ${y1n}`, // top arc of band i+1 (reversed)
+      `Z`,
+    ].join(' ');
+    return <path key={`sep-${index}`} d={d} fill="white" className="pointer-events-none" />;
   };
 
-  const handleStageClick = (stageName: string) => {
-    console.log(`Viewing details for ${stageName}`);
-    router.push(`/leads?stage=${stageName}`);
+  const getTooltipPosition = (index: number) => {
+    const yCenter = index * (BAND_H + BAND_OFFSET) + BAND_OFFSET + BAND_H / 2;
+    const y1 = index * (BAND_H + BAND_OFFSET) + BAND_OFFSET;
+    const y2 = y1 + BAND_H;
+    const w1 = w(y1);
+    const w2 = w(y2);
+    const xRightAvg = X_center + (w1 + w2) / 4;
+    return {
+      left: `${((xRightAvg + 8) / 260) * 100}%`,
+      top: `${(yCenter / 248) * 100}%`,
+    };
   };
+
+  const getTextColor = (color: string) =>
+    color === "#dda90c" || color === "#f29b0b" ? "#3b2c00" : "#ffffff";
+
+  const activeStageIndex = funnelStages.findIndex(s => s.name === hoveredStage);
+  const activeStage = activeStageIndex !== -1 ? funnelStages[activeStageIndex] : null;
 
   return (
     <section className="h-full rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)]">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes fadeInScaleFunnel {
+          from { opacity: 0; transform: translateY(-50%) scale(0.93); }
+          to   { opacity: 1; transform: translateY(-50%) scale(1); }
+        }
+        .funnel-tooltip {
+          animation: fadeInScaleFunnel 0.18s cubic-bezier(0.16,1,0.3,1) forwards;
+          transform-origin: left center;
+        }
+      `}} />
+
       <CardTitle
         title="Sales Funnel"
         subtitle="Track performance across the sales pipeline"
         action={
-          <button 
-            onClick={handleFunnelPeriodChange}
-            className="flex h-7 items-center gap-2 rounded-md border border-[#e6e8e9] px-3 text-[8px] font-medium hover:bg-gray-50 transition-colors"
-          >
-            <CalendarDays size={10} /> {funnelPeriod}
+          <button className="flex items-center gap-1.5 rounded-lg border border-[#e5e7e8] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#333] shadow-sm hover:bg-gray-50 transition-colors cursor-pointer">
+            <CalendarDays size={11} className="text-gray-500" />
+            This Month
           </button>
         }
       />
 
-      <div className="grid grid-cols-[170px_1fr] gap-4">
-        {/* Funnel Visualization */}
-        <div className="flex h-[195px] flex-col items-center justify-center gap-[2px]">
-          {funnelStages.map((item) => (
-            <div
-              key={item.name}
-              style={{ width: `${item.width}%`, backgroundColor: item.color }}
-              className="h-[22px] rounded-[2px] cursor-pointer hover:opacity-80 transition-opacity"
-              aria-label={`${item.name}: ${item.leads}`}
-              onClick={() => handleStageClick(item.name)}
-            />
-          ))}
+      <div className="grid grid-cols-[230px_1fr] gap-4">
+
+        {/* ── Left: Funnel SVG ── */}
+        <div className="relative flex h-[215px] items-center justify-center">
+          <svg width="100%" height="100%" viewBox="0 0 240 215" className="overflow-visible">
+
+            {/* Curved band segments */}
+            {funnelStages.map((item, idx) => {
+              const y1 = idx * (BAND_H + BAND_OFFSET) + BAND_OFFSET;
+              const y2 = y1 + BAND_H;
+              const yCenter = (y1 + y2) / 2;
+              const isHovered = hoveredStage === item.name;
+              const isAnyHovered = hoveredStage !== null;
+
+              return (
+                <g key={item.name}>
+                  <path
+                    d={getFrontSegmentPath(idx)}
+                    fill={item.color}
+                    style={{
+                      opacity: isHovered ? 1 : isAnyHovered ? 0.32 : 0.96,
+                      filter: isHovered ? "brightness(1.07) drop-shadow(0 3px 8px rgba(0,0,0,0.22))" : "none",
+                      transition: "opacity 0.25s, filter 0.25s",
+                    }}
+                    onMouseEnter={() => setHoveredStage(item.name)}
+                    onMouseLeave={() => setHoveredStage(null)}
+                    className="cursor-pointer"
+                  />
+                  <text
+                    x={X_center}
+                    y={yCenter}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize={9}
+                    fontWeight="800"
+                    letterSpacing="0.3"
+                    fill={getTextColor(item.color)}
+                    className="pointer-events-none select-none"
+                    style={{ opacity: isHovered ? 1 : isAnyHovered ? 0.38 : 0.92, transition: "opacity 0.25s" }}
+                  >
+                    {item.name}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* White separators drawn on top for clean band gaps */}
+            {funnelStages.map((_, idx) => getWhiteSeparator(idx))}
+          </svg>
+
+          {/* Floating hover tooltip */}
+          {activeStage && activeStageIndex !== -1 && (() => {
+            const pos = getTooltipPosition(activeStageIndex);
+            return (
+              <div
+                className="funnel-tooltip absolute z-50 pointer-events-none select-none"
+                style={{ left: pos.left, top: pos.top, width: 136 }}
+              >
+                <div className="rounded-lg bg-[#0f1923] border border-gray-700/60 shadow-2xl px-3 py-2.5 text-white">
+                  {/* Arrow */}
+                  <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-[#0f1923] border-l border-b border-gray-700/60" />
+                  <div className="text-[8.5px] font-bold text-gray-300 mb-1">{activeStage.name}</div>
+                  <div className="text-[13px] font-extrabold text-[#fbbf24] mb-1.5">
+                    {activeStage.leads} <span className="text-[8px] font-normal text-white/70">leads</span>
+                  </div>
+                  <div className="border-t border-gray-700/50 pt-1.5 flex flex-col gap-1">
+                    <div className="flex items-center justify-between text-[7.5px]">
+                      <span className="text-gray-400">Conv</span>
+                      <span className="text-emerald-400 font-semibold">{activeStage.conversion}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[7.5px]">
+                      <span className="text-gray-400">Drop</span>
+                      <span className="text-red-400 font-semibold">{activeStage.dropOff}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
-        {/* Funnel Data Table */}
-        <div>
-          <div className="grid grid-cols-[1.1fr_.55fr_.6fr_.65fr_.6fr] gap-x-2 border-b border-[#edf0f1] pb-2 text-[7px] uppercase text-[#858c91]">
+        {/* ── Right: Data Table ── */}
+        <div className="flex flex-col justify-center">
+          {/* Column headers */}
+          <div className="grid grid-cols-[1.25fr_.58fr_.62fr_.62fr_.58fr] gap-x-1.5 border-b border-[#edf0f1] pb-1.5 text-[7.5px] font-bold uppercase tracking-wider text-[#8b9195]">
             <span>Stage</span>
             <span className="text-right">Leads</span>
-            <span className="text-right">Conv %</span>
-            <span className="text-right">Drop %</span>
-            <span className="text-right">Stage %</span>
+            <span className="text-right">Conv%</span>
+            <span className="text-right">Drop%</span>
+            <span className="text-right">Stage%</span>
           </div>
 
-          {funnelStages.map((item) => (
-            <div
-              key={item.name}
-              className="grid h-[24px] grid-cols-[1.1fr_.55fr_.6fr_.65fr_.6fr] items-center gap-x-2 border-b border-[#f0f1f2] text-[8px] last:border-0 cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => handleStageClick(item.name)}
-            >
-              <span className="flex items-center gap-2 font-medium">
-                <i className="h-1.5 w-1.5 rounded-full" style={{ background: item.color }} />
-                {item.name}
-              </span>
-              <span className="text-right font-semibold">{item.leads}</span>
-              <span className="text-right">{item.conversion}</span>
-              <span
-                className={
-                  item.dropOff !== "—"
-                    ? "text-right text-red-500 font-medium"
-                    : "text-right text-[#8b9195]"
-                }
+          {/* Rows */}
+          {funnelStages.map((item) => {
+            const isHovered = hoveredStage === item.name;
+            const isAnyHovered = hoveredStage !== null;
+            return (
+              <div
+                key={item.name}
+                className="grid grid-cols-[1.25fr_.58fr_.62fr_.62fr_.58fr] gap-x-1.5 border-b border-[#f1f2f3] last:border-0 py-[4.5px] text-[9px] items-center cursor-pointer"
+                style={{
+                  opacity: isAnyHovered ? (isHovered ? 1 : 0.38) : 1,
+                  background: isHovered ? "rgba(22,132,84,0.05)" : "transparent",
+                  borderLeftWidth: 2,
+                  borderLeftStyle: "solid",
+                  borderLeftColor: isHovered ? item.color : "transparent",
+                  paddingLeft: 4,
+                  transition: "opacity 0.2s, background 0.2s",
+                }}
+                onMouseEnter={() => setHoveredStage(item.name)}
+                onMouseLeave={() => setHoveredStage(null)}
               >
-                {item.dropOff}
-              </span>
-              <span className="text-right">{item.stage}</span>
-            </div>
-          ))}
+                <span className="flex items-center gap-1.5 font-semibold text-[#1a1a1a]">
+                  <span className="inline-block w-[7px] h-[7px] rounded-full shrink-0" style={{ background: item.color }} />
+                  {item.name}
+                </span>
+                <span className="text-right font-bold text-[#111]">{item.leads}</span>
+                <span className="text-right text-[#48936a] font-medium">{item.conversion}</span>
+                <span className="text-right font-semibold" style={{ color: item.dropOff !== "—" ? "#d63b3f" : "#b0b7bc" }}>
+                  {item.dropOff}
+                </span>
+                <span className="text-right text-[#555]">{item.stage}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Conversion Ratio Summary */}
-      <div 
-        className="mt-2 flex h-9 items-center rounded-lg border border-[#e8e8df] bg-[#f7f8f4] px-3 cursor-pointer hover:bg-[#f0f1ed] transition-colors"
-        onClick={handleConversionClick}
-      >
-        <Award size={15} className="text-[#d39b17]" />
-        <span className="ml-2 text-[8px] font-semibold">Overall Conversion Ratio</span>
-        <span className="ml-auto text-[18px] font-bold text-[#168454]">9.8%</span>
-        <span className="ml-8 text-[8px] text-emerald-600">
-          <TrendingUp size={9} className="inline" /> 0.6%
+      {/* ── Footer: Overall Conversion Ratio ── */}
+      <div className="mt-3 flex h-9 items-center rounded-lg border border-[#e4e6e0] bg-[#f6f7f2] px-3 select-none">
+        <Award size={15} className="text-[#d39b17] shrink-0" />
+        <span className="ml-2 text-[9px] font-semibold text-[#2a2a2a]">Overall Conversion Ratio</span>
+        <span className="ml-auto text-[19px] font-extrabold text-[#168454] leading-none">9.8%</span>
+        <span className="ml-5 flex items-center gap-0.5 text-[9px] font-bold text-emerald-600">
+          <TrendingUp size={9} className="shrink-0" />
+          0.6%
         </span>
-        <span className="ml-1 text-[7px] text-[#777e82]">vs last month</span>
+        <span className="ml-1 text-[8px] text-[#7a8085]">vs last month</span>
       </div>
     </section>
   );
 }
 
-// Lead Trend Widget
+
 const trendSummary = [
   { label: "Leads", value: "4,128", color: "#07543d", icon: Users },
   { label: "Conversions", value: "264", color: "#d89a11", icon: Award },
@@ -141,34 +282,11 @@ const trendSummary = [
 ];
 
 export function LeadTrend() {
-  const router = useRouter();
   const [period, setPeriod] = useState("Month");
 
   const handlePeriodChange = (newPeriod: string) => {
     setPeriod(newPeriod);
     console.log(`Period changed to: ${newPeriod}`);
-  };
-
-  const handleLegendClick = (label: string) => {
-    console.log(`Legend clicked: ${label}`);
-    if (label === "Leads") {
-      router.push("/leads");
-    } else if (label === "Conversions") {
-      router.push("/analytics/conversions");
-    } else if (label === "Bookings") {
-      router.push("/bookings");
-    }
-  };
-
-  const handleSummaryClick = (label: string) => {
-    console.log(`Summary clicked: ${label}`);
-    if (label === "Leads") {
-      router.push("/leads");
-    } else if (label === "Conversions") {
-      router.push("/analytics/conversions");
-    } else if (label === "Bookings") {
-      router.push("/bookings");
-    }
   };
 
   return (
@@ -182,7 +300,7 @@ export function LeadTrend() {
               <button
                 key={item}
                 onClick={() => handlePeriodChange(item)}
-                className={`h-7 px-4 text-[7.5px] transition-colors ${
+                className={`h-7 px-4 text-[7.5px] transition-colors cursor-pointer ${
                   period === item
                     ? "bg-[#073d2e] text-white"
                     : "bg-white text-[#42484b] hover:bg-gray-50"
@@ -195,26 +313,17 @@ export function LeadTrend() {
         }
       />
 
-      {/* Legend - Clickable */}
-      <div className="mb-1 flex justify-center gap-6 text-[8px] text-[#2d3335]">
-        <span 
-          className="cursor-pointer hover:opacity-70 transition-opacity"
-          onClick={() => handleLegendClick("Leads")}
-        >
+      {/* Legend */}
+      <div className="mb-1 flex justify-center gap-6 text-[8px] text-[#2d3335] select-none">
+        <span>
           <i className="mr-2 inline-block h-1.5 w-3 rounded bg-[#073d2e]" />
           Leads
         </span>
-        <span 
-          className="cursor-pointer hover:opacity-70 transition-opacity"
-          onClick={() => handleLegendClick("Conversions")}
-        >
+        <span>
           <i className="mr-2 inline-block h-1.5 w-3 rounded bg-[#df9e12]" />
           Conversions
         </span>
-        <span 
-          className="cursor-pointer hover:opacity-70 transition-opacity"
-          onClick={() => handleLegendClick("Bookings")}
-        >
+        <span>
           <i className="mr-2 inline-block h-1.5 w-3 rounded bg-[#087a67]" />
           Bookings
         </span>
@@ -268,13 +377,12 @@ export function LeadTrend() {
         </ResponsiveContainer>
       </div>
 
-      {/* Summary Stats - Clickable */}
-      <div className="grid grid-cols-3 border-t border-[#edf0f1] pt-3">
+      {/* Summary Stats */}
+      <div className="grid grid-cols-3 border-t border-[#edf0f1] pt-3 select-none">
         {trendSummary.map(({ label, value, color, icon: Icon }) => (
           <div 
             key={label} 
-            className="flex items-center justify-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-            onClick={() => handleSummaryClick(label)}
+            className="flex items-center justify-center gap-3 p-2 rounded-lg"
           >
             <span
               className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f4f7f5]"
@@ -284,7 +392,7 @@ export function LeadTrend() {
             </span>
             <span>
               <small className="block text-[8px] text-[#7b8286]">{label}</small>
-              <b className="text-[15px]" style={{ color }}>
+              <b className="text-[15px] font-bold" style={{ color }}>
                 {value}
               </b>
             </span>
@@ -297,36 +405,34 @@ export function LeadTrend() {
 
 // Lead Sources Widget
 export function LeadSources() {
-  const router = useRouter();
+  const [hoveredSource, setHoveredSource] = useState<string | null>(null);
 
-  const handleViewAll = () => {
-    console.log("View all lead sources clicked");
-    router.push("/analytics/sources");
+  const renderActiveShape = (props: any) => {
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+    return (
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius - 2}
+        outerRadius={outerRadius + 4}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        style={{
+          filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.15))",
+        }}
+      />
+    );
   };
 
-  const handleSourceClick = (sourceName: string) => {
-    console.log(`Source clicked: ${sourceName}`);
-    router.push(`/leads?source=${sourceName}`);
-  };
-
-  const handleTotalLeadsClick = () => {
-    console.log("Total leads clicked");
-    router.push("/leads");
-  };
+  const activeIndex = leadSources.findIndex((s) => s.name === hoveredSource);
+  const activeSource = activeIndex !== -1 ? leadSources[activeIndex] : null;
 
   return (
     <section className="h-full rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)]">
       <CardTitle
         title="Lead Sources"
         subtitle="Where your leads are coming from"
-        action={
-          <button 
-            onClick={handleViewAll}
-            className="rounded-md border border-[#e6e8e9] px-3 py-1.5 text-[7.5px] hover:bg-gray-50 transition-colors"
-          >
-            View all
-          </button>
-        }
       />
 
       <div className="flex items-center gap-5">
@@ -342,48 +448,99 @@ export function LeadSources() {
                 paddingAngle={1}
                 stroke="#fff"
                 strokeWidth={1}
+                // @ts-ignore
+                activeIndex={activeIndex !== -1 ? activeIndex : undefined}
+                // @ts-ignore
+                activeShape={renderActiveShape}
+                onMouseEnter={(_, index) => {
+                  if (leadSources[index]) {
+                    setHoveredSource(leadSources[index].name);
+                  }
+                }}
+                onMouseLeave={() => {
+                  setHoveredSource(null);
+                }}
               >
-                {leadSources.map((item) => (
-                  <Cell 
-                    key={item.name} 
-                    fill={item.color}
-                    className="cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => handleSourceClick(item.name)}
-                  />
-                ))}
+                {leadSources.map((item) => {
+                  const isHovered = hoveredSource === item.name;
+                  const isAnyHovered = hoveredSource !== null;
+                  return (
+                    <Cell 
+                      key={item.name} 
+                      fill={item.color}
+                      className="transition-all duration-300"
+                      style={{
+                        opacity: isHovered ? 1 : isAnyHovered ? 0.4 : 1,
+                      }}
+                    />
+                  );
+                })}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
 
-          {/* Center Text - Clickable */}
+          {/* Center Text */}
           <div 
-            className="pointer-events-auto absolute inset-0 flex cursor-pointer flex-col items-center justify-center hover:bg-gray-50/50 rounded-full transition-colors"
-            onClick={handleTotalLeadsClick}
+            className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center rounded-full transition-all duration-300 select-none"
           >
-            <b className="text-[15px]">4,128</b>
-            <span className="text-[7px] text-[#777e82]">Total Leads</span>
+            <style dangerouslySetInnerHTML={{__html: `
+              @keyframes fadeInCenter {
+                from { opacity: 0; transform: scale(0.92); }
+                to { opacity: 1; transform: scale(1); }
+              }
+              .animate-fade-in-center {
+                animation: fadeInCenter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+              }
+            `}} />
+            {hoveredSource && activeSource ? (
+              <div key={hoveredSource} className="flex flex-col items-center justify-center text-center animate-fade-in-center">
+                <b className="text-[14px] font-extrabold tracking-tight transition-colors duration-200" style={{ color: activeSource.color }}>
+                  {activeSource.percent}
+                </b>
+                <span className="text-[8px] font-bold text-[#15191a] mt-0.5 tracking-tight max-w-[80px] truncate">
+                  {activeSource.name}
+                </span>
+                <span className="text-[7px] text-[#788085] mt-0.5 font-medium">
+                  {activeSource.value.toLocaleString()} leads
+                </span>
+              </div>
+            ) : (
+              <div key="total" className="flex flex-col items-center justify-center text-center animate-fade-in-center">
+                <b className="text-[15px] font-extrabold text-[#15191a] tracking-tight">4,128</b>
+                <span className="text-[7px] font-bold text-[#788085] tracking-wide uppercase mt-0.5">Total Leads</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Source List - Clickable */}
+        {/* Source List */}
         <div className="min-w-0 flex-1 space-y-1.5">
-          {leadSources.map((item) => (
-            <div
-              key={item.name}
-              className="grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[8px] cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors"
-              onClick={() => handleSourceClick(item.name)}
-            >
-              <span className="truncate">
-                <i
-                  className="mr-2 inline-block h-1.5 w-1.5 rounded-full"
-                  style={{ background: item.color }}
-                />
-                {item.name}
-              </span>
-              <b>{item.value.toLocaleString()}</b>
-              <span className="text-[#8a9094]">({item.percent})</span>
-            </div>
-          ))}
+          {leadSources.map((item) => {
+            const isHovered = hoveredSource === item.name;
+            const isAnyHovered = hoveredSource !== null;
+            return (
+              <div
+                key={item.name}
+                className={`grid grid-cols-[1fr_auto_auto] items-center gap-2 text-[8px] px-2 py-1.5 border-l-2 rounded-r transition-all duration-200 cursor-default ${
+                  isHovered
+                    ? "bg-[#f4f7f5] font-semibold text-[#004b36] border-l-[#004b36] pl-2"
+                    : isAnyHovered
+                    ? "opacity-40 border-l-transparent"
+                    : "border-l-transparent hover:bg-gray-50/50"
+                }`}
+              >
+                <span className="truncate">
+                  <i
+                    className="mr-2 inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ background: item.color }}
+                  />
+                  {item.name}
+                </span>
+                <b>{item.value.toLocaleString()}</b>
+                <span className="text-[#8a9094]">({item.percent})</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
