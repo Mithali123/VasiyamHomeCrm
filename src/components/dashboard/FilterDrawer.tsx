@@ -1,26 +1,26 @@
 "use client";
 
-import { 
-  X, 
-  Calendar, 
-  Users, 
-  Building2, 
-  Filter, 
-  RotateCcw, 
-  Save, 
+import {
+  X,
+  Calendar,
+  Users,
+  Building2,
+  Filter,
+  RotateCcw,
+  Save,
   Download,
   Check,
   ChevronRight,
   Target,
   Megaphone,
   RefreshCw,
-  BarChart3
+  BarChart3,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-// Types
+// ============ TYPES ============
 interface FilterState {
   dateRange: string;
   scope: string;
@@ -37,6 +37,7 @@ interface FilterDrawerProps {
   initialFilters?: Partial<FilterState>;
 }
 
+// ============ CONSTANTS ============
 const datePresets = [
   { label: "Today", value: "today" },
   { label: "Yesterday", value: "yesterday" },
@@ -54,9 +55,17 @@ const scopes = [
   { id: "all", label: "All Teams Data", desc: "Leads across all teams and departments" },
 ];
 
-// Mock filter options - would come from backend
+// ✅ Updated with real Vasiyam Homes project names
 const filterOptions: Record<string, string[]> = {
-  project: ["Vasiyam Greens", "Vasiyam Hills", "Vasiyam Heights", "Vasiyam Lakeview"],
+  project: [
+    "Vasiyam Pride",
+    "King's Garden",
+    "BGR Garden",
+    "Vasiyam Florence",
+    "Grandeur",
+    "Aspire",
+    "Magnum",
+  ],
   rm: ["Arvind Kumar", "Priya Sharma", "Meera Rajan", "Rahul Verma"],
   team: ["Sales Team A", "Sales Team B", "Marketing Team"],
   source: ["Website", "Referral", "Instagram", "99acres", "Facebook", "Email"],
@@ -64,11 +73,12 @@ const filterOptions: Record<string, string[]> = {
   stage: ["New", "Contacted", "Qualified", "Site Visit", "Negotiation", "Won", "Lost"],
 };
 
-export default function FilterDrawer({ 
-  isOpen, 
-  onClose, 
+// ============ COMPONENT ============
+export default function FilterDrawer({
+  isOpen,
+  onClose,
   onApplyFilters,
-  initialFilters 
+  initialFilters,
 }: FilterDrawerProps) {
   // State
   const [activeDate, setActiveDate] = useState(initialFilters?.dateRange || "last30");
@@ -101,18 +111,18 @@ export default function FilterDrawer({
 
   // Handle filter selection
   const handleFilterSelect = (filterId: string, option: string) => {
-    setFilterSelections(prev => {
+    setFilterSelections((prev) => {
       const current = prev[filterId] || [];
       const updated = current.includes(option)
-        ? current.filter(item => item !== option)
+        ? current.filter((item) => item !== option)
         : [...current, option];
       return { ...prev, [filterId]: updated };
     });
   };
 
   // Handle custom date range
-  const handleDateRangeChange = (type: 'start' | 'end', value: string) => {
-    setCustomDateRange(prev => ({ ...prev, [type]: value }));
+  const handleDateRangeChange = (type: "start" | "end", value: string) => {
+    setCustomDateRange((prev) => ({ ...prev, [type]: value }));
   };
 
   // Apply filters
@@ -166,21 +176,21 @@ export default function FilterDrawer({
     setIsExporting(true);
     setTimeout(() => {
       setIsExporting(false);
-      console.log("Exporting dashboard report...");
     }, 1000);
   };
 
   // Load saved view
   const loadSavedView = (viewName: string) => {
     console.log(`Loading view: ${viewName}`);
-    // Would fetch saved filters from backend
   };
 
   // Calculate total active filters
   const totalActiveFilters = Object.values(filterSelections).reduce(
-    (acc, curr) => acc + curr.length, 0
+    (acc, curr) => acc + curr.length,
+    0
   );
 
+  // ============ RENDER ============
   return (
     <AnimatePresence>
       {isOpen && (
@@ -211,11 +221,13 @@ export default function FilterDrawer({
                 <div>
                   <h2 className="text-lg font-bold text-[#141718] leading-none">Filters</h2>
                   <p className="text-[10px] text-gray-500 mt-1 font-medium tracking-wide uppercase">
-                    {totalActiveFilters > 0 ? `${totalActiveFilters} filters active` : "Refine your data"}
+                    {totalActiveFilters > 0
+                      ? `${totalActiveFilters} filters active`
+                      : "Refine your data"}
                   </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 aria-label="Close drawer"
@@ -238,8 +250,8 @@ export default function FilterDrawer({
                       onClick={() => setActiveDate(preset.value)}
                       className={cn(
                         "flex items-center justify-between px-3 py-2.5 text-xs rounded-xl border transition-all",
-                        activeDate === preset.value 
-                          ? "bg-emerald-600 border-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/20" 
+                        activeDate === preset.value
+                          ? "bg-emerald-600 border-emerald-600 text-white font-bold shadow-lg shadow-emerald-600/20"
                           : "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
                       )}
                     >
@@ -253,20 +265,24 @@ export default function FilterDrawer({
                 {activeDate === "custom" && (
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider">Start</label>
+                      <label className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider">
+                        Start
+                      </label>
                       <input
                         type="date"
                         value={customDateRange.start}
-                        onChange={(e) => handleDateRangeChange('start', e.target.value)}
+                        onChange={(e) => handleDateRangeChange("start", e.target.value)}
                         className="w-full mt-1 px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
                       />
                     </div>
                     <div>
-                      <label className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider">End</label>
+                      <label className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider">
+                        End
+                      </label>
                       <input
                         type="date"
                         value={customDateRange.end}
-                        onChange={(e) => handleDateRangeChange('end', e.target.value)}
+                        onChange={(e) => handleDateRangeChange("end", e.target.value)}
                         className="w-full mt-1 px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600"
                       />
                     </div>
@@ -280,45 +296,67 @@ export default function FilterDrawer({
                   <BarChart3 size={12} className="text-emerald-600" /> Comparison
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
-                  <button 
+                  <button
                     onClick={() => setComparison("previous")}
                     className={cn(
                       "flex flex-col items-center gap-1 p-3 rounded-xl border transition-all",
-                      comparison === "previous" 
-                        ? "bg-emerald-50 border-emerald-600 shadow-sm" 
+                      comparison === "previous"
+                        ? "bg-emerald-50 border-emerald-600 shadow-sm"
                         : "bg-white border-gray-200 hover:bg-gray-50"
                     )}
                   >
-                    <div className={cn(
-                      "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-                      comparison === "previous" ? "border-emerald-600" : "border-gray-300"
-                    )}>
-                      {comparison === "previous" && <div className="w-2 h-2 rounded-full bg-emerald-600" />}
+                    <div
+                      className={cn(
+                        "w-4 h-4 rounded-full border-2 flex items-center justify-center",
+                        comparison === "previous" ? "border-emerald-600" : "border-gray-300"
+                      )}
+                    >
+                      {comparison === "previous" && (
+                        <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                      )}
                     </div>
-                    <p className={cn("text-[10px] font-bold", comparison === "previous" ? "text-emerald-600" : "text-gray-600")}>
+                    <p
+                      className={cn(
+                        "text-[10px] font-bold",
+                        comparison === "previous" ? "text-emerald-600" : "text-gray-600"
+                      )}
+                    >
                       Previous Period
                     </p>
-                    <p className="text-[7px] text-gray-400 text-center">Compare with preceding range</p>
+                    <p className="text-[7px] text-gray-400 text-center">
+                      Compare with preceding range
+                    </p>
                   </button>
-                  <button 
+                  <button
                     onClick={() => setComparison("year")}
                     className={cn(
                       "flex flex-col items-center gap-1 p-3 rounded-xl border transition-all",
-                      comparison === "year" 
-                        ? "bg-emerald-50 border-emerald-600 shadow-sm" 
+                      comparison === "year"
+                        ? "bg-emerald-50 border-emerald-600 shadow-sm"
                         : "bg-white border-gray-200 hover:bg-gray-50"
                     )}
                   >
-                    <div className={cn(
-                      "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-                      comparison === "year" ? "border-emerald-600" : "border-gray-300"
-                    )}>
-                      {comparison === "year" && <div className="w-2 h-2 rounded-full bg-emerald-600" />}
+                    <div
+                      className={cn(
+                        "w-4 h-4 rounded-full border-2 flex items-center justify-center",
+                        comparison === "year" ? "border-emerald-600" : "border-gray-300"
+                      )}
+                    >
+                      {comparison === "year" && (
+                        <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                      )}
                     </div>
-                    <p className={cn("text-[10px] font-bold", comparison === "year" ? "text-emerald-600" : "text-gray-600")}>
+                    <p
+                      className={cn(
+                        "text-[10px] font-bold",
+                        comparison === "year" ? "text-emerald-600" : "text-gray-600"
+                      )}
+                    >
                       Same Period Last Year
                     </p>
-                    <p className="text-[7px] text-gray-400 text-center">Compare with last year</p>
+                    <p className="text-[7px] text-gray-400 text-center">
+                      Compare with last year
+                    </p>
                   </button>
                 </div>
               </section>
@@ -335,19 +373,28 @@ export default function FilterDrawer({
                       onClick={() => setActiveScope(scope.id)}
                       className={cn(
                         "w-full flex items-center gap-4 p-3 rounded-xl border transition-all",
-                        activeScope === scope.id 
-                          ? "bg-emerald-50 border-emerald-600 shadow-sm" 
+                        activeScope === scope.id
+                          ? "bg-emerald-50 border-emerald-600 shadow-sm"
                           : "bg-white border-gray-200 hover:bg-gray-50"
                       )}
                     >
-                      <div className={cn(
-                        "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
-                        activeScope === scope.id ? "border-emerald-600" : "border-gray-300"
-                      )}>
-                        {activeScope === scope.id && <div className="w-2 h-2 rounded-full bg-emerald-600" />}
+                      <div
+                        className={cn(
+                          "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
+                          activeScope === scope.id ? "border-emerald-600" : "border-gray-300"
+                        )}
+                      >
+                        {activeScope === scope.id && (
+                          <div className="w-2 h-2 rounded-full bg-emerald-600" />
+                        )}
                       </div>
                       <div className="text-left">
-                        <p className={cn("text-xs font-bold", activeScope === scope.id ? "text-emerald-600" : "text-[#141718]")}>
+                        <p
+                          className={cn(
+                            "text-xs font-bold",
+                            activeScope === scope.id ? "text-emerald-600" : "text-[#141718]"
+                          )}
+                        >
                           {scope.label}
                         </p>
                         <p className="text-[9px] text-gray-400">{scope.desc}</p>
@@ -366,30 +413,39 @@ export default function FilterDrawer({
                   {additionalFilters.map((filter) => {
                     const count = getFilterCount(filter.id);
                     const isActive = activeFilter === filter.id;
-                    
+
                     return (
-                      <div key={filter.id} className="border border-gray-100 rounded-xl overflow-hidden">
+                      <div
+                        key={filter.id}
+                        className="border border-gray-100 rounded-xl overflow-hidden"
+                      >
                         <button
                           onClick={() => setActiveFilter(isActive ? null : filter.id)}
                           className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
                         >
                           <div className="flex items-center gap-3">
                             <filter.icon size={16} className="text-gray-400" />
-                            <span className="text-xs font-bold text-gray-600">{filter.label}</span>
+                            <span className="text-xs font-bold text-gray-600">
+                              {filter.label}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className={cn(
-                              "text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-tight",
-                              count > 0 ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"
-                            )}>
+                            <span
+                              className={cn(
+                                "text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-tight",
+                                count > 0
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-gray-100 text-gray-400"
+                              )}
+                            >
                               {count > 0 ? `${count} Selected` : "All"}
                             </span>
-                            <ChevronRight 
-                              size={14} 
+                            <ChevronRight
+                              size={14}
                               className={cn(
                                 "text-gray-300 transition-transform",
                                 isActive && "rotate-90"
-                              )} 
+                              )}
                             />
                           </div>
                         </button>
@@ -411,12 +467,14 @@ export default function FilterDrawer({
                                     onClick={() => handleFilterSelect(filter.id, option)}
                                     className="w-full flex items-center gap-3 px-3 py-2 text-xs rounded-lg hover:bg-gray-50 transition-colors"
                                   >
-                                    <div className={cn(
-                                      "w-4 h-4 rounded border-2 flex items-center justify-center shrink-0",
-                                      (filterSelections[filter.id] || []).includes(option)
-                                        ? "bg-emerald-600 border-emerald-600"
-                                        : "border-gray-300"
-                                    )}>
+                                    <div
+                                      className={cn(
+                                        "w-4 h-4 rounded border-2 flex items-center justify-center shrink-0",
+                                        (filterSelections[filter.id] || []).includes(option)
+                                          ? "bg-emerald-600 border-emerald-600"
+                                          : "border-gray-300"
+                                      )}
+                                    >
                                       {(filterSelections[filter.id] || []).includes(option) && (
                                         <Check size={10} className="text-white" />
                                       )}
@@ -424,11 +482,16 @@ export default function FilterDrawer({
                                     <span className="text-gray-700">{option}</span>
                                   </button>
                                 ))}
-                                
+
                                 {/* Clear filter button */}
                                 {count > 0 && (
                                   <button
-                                    onClick={() => setFilterSelections(prev => ({ ...prev, [filter.id]: [] }))}
+                                    onClick={() =>
+                                      setFilterSelections((prev) => ({
+                                        ...prev,
+                                        [filter.id]: [],
+                                      }))
+                                    }
                                     className="w-full text-center py-2 text-[10px] font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                   >
                                     Clear all
@@ -468,13 +531,13 @@ export default function FilterDrawer({
             {/* FOOTER ACTIONS */}
             <div className="p-6 border-t border-gray-100 bg-gray-50/50 space-y-3 shrink-0">
               <div className="grid grid-cols-2 gap-3">
-                <button 
+                <button
                   onClick={handleResetFilters}
                   className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-white hover:border-gray-300 transition-all shadow-sm"
                 >
                   <RotateCcw size={14} /> Reset
                 </button>
-                <button 
+                <button
                   onClick={handleSaveView}
                   disabled={isSaving}
                   className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-white hover:border-gray-300 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -492,21 +555,28 @@ export default function FilterDrawer({
                   {isSaving ? "Saving..." : "Save View"}
                 </button>
               </div>
-              
+
               <div className="flex gap-3">
-                <button 
+                <button
                   onClick={handleRefresh}
                   className="flex items-center justify-center gap-2 py-4 px-4 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all shadow-sm flex-1"
                 >
                   <motion.div
                     animate={{ rotate: isRefreshing ? 360 : 0 }}
-                    transition={{ duration: 0.5, ease: "linear", repeat: isRefreshing ? Infinity : 0 }}
+                    transition={{
+                      duration: 0.5,
+                      ease: "linear",
+                      repeat: isRefreshing ? Infinity : 0,
+                    }}
                   >
-                    <RefreshCw size={14} className={cn(isRefreshing ? "text-emerald-600" : "text-gray-400")} />
+                    <RefreshCw
+                      size={14}
+                      className={cn(isRefreshing ? "text-emerald-600" : "text-gray-400")}
+                    />
                   </motion.div>
                   {isRefreshing ? "Refreshing..." : "Refresh"}
                 </button>
-                <button 
+                <button
                   onClick={handleApplyFilters}
                   className="flex-[2] py-4 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 active:scale-[0.98] transition-all"
                 >
@@ -515,7 +585,7 @@ export default function FilterDrawer({
               </div>
 
               <div className="flex items-center justify-center pt-2">
-                <button 
+                <button
                   onClick={handleExportReport}
                   disabled={isExporting}
                   className="flex items-center gap-2 text-[10px] font-black text-gray-400 hover:text-emerald-600 transition-colors uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
