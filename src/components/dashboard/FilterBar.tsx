@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ChevronDown, Download, Filter, Plus, RotateCcw } from "lucide-react";
+import { CalendarDays, ChevronDown, Download, Filter, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import FilterDrawer from "./FilterDrawer";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +15,7 @@ const filters = [
 
 // Date range calculation function
 const getDateRange = (range: string) => {
-  const now = new Date(2026, 5, 29); // June 29, 2026
+  const now = new Date(2026, 5, 29);
   let startDate = new Date(now);
   let endDate = new Date(now);
 
@@ -132,8 +132,6 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
       selectedFilters: selected,
     };
     
-    console.log("Applying filters:", filterData);
-    
     if (onFilterChange) {
       onFilterChange(filterData);
     }
@@ -143,7 +141,6 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
   const handleDateSelect = (option: string) => {
     setDateRange(option);
     setOpen(null);
-    // Apply filters immediately when date changes
     setTimeout(() => applyFilters(), 100);
   };
 
@@ -153,25 +150,16 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
     next[index] = option;
     setSelected(next);
     setOpen(null);
-    // Apply filters immediately when filter changes
     setTimeout(() => applyFilters(), 100);
-  };
-
-  // Handle create lead
-  const handleCreateLead = () => {
-    console.log("Create lead clicked");
-    // Navigate to create lead page or open modal
   };
 
   // Handle import
   const handleImport = () => {
     console.log("Import clicked");
-    // Open import modal or navigate to import page
   };
 
   // Handle more filters
   const handleMoreFilters = () => {
-    console.log("More filters clicked");
     setDrawerOpen(true);
   };
 
@@ -279,13 +267,6 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
       <div className="min-w-2 flex-1" />
 
       {/* Action Buttons */}
-      <button 
-        onClick={handleCreateLead}
-        className="flex h-10 items-center gap-2 rounded-lg bg-[#eef6f1] px-3 text-[10px] font-semibold text-[#07543d] hover:bg-[#dcece3] transition-colors"
-      >
-        <Plus size={13} /> Create Lead
-      </button>
-
       <button 
         onClick={handleImport}
         className="flex h-10 items-center gap-2 rounded-lg border border-[#e6e7e8] px-3 text-[10px] font-medium hover:bg-gray-50 transition-colors"

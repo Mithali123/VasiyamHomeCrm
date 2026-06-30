@@ -5,7 +5,6 @@ import {
   Users,
   Settings,
   Menu,
-  Headset,
   ChevronRight
 } from "lucide-react";
 import { useState } from "react";
@@ -50,7 +49,6 @@ export default function Sidebar() {
               transition={{ duration: 0.2 }}
               className="flex items-center gap-2.5 whitespace-nowrap overflow-hidden py-0.5"
             >
-              {/* Cropped pyramid icon from logo.png */}
               <div className="w-8 h-[20px] overflow-hidden flex items-start justify-center shrink-0">
                 <img
                   src="/logo.png"
@@ -58,7 +56,6 @@ export default function Sidebar() {
                   className="w-full h-auto object-contain"
                 />
               </div>
-              {/* Branding text on the right */}
               <div className="flex flex-col text-left leading-[1.1]">
                 <span className="text-[12px] font-black text-[#C59A2C] tracking-wider uppercase">
                   VASIYAM HOMES
@@ -134,8 +131,6 @@ export default function Sidebar() {
                   )}
                 </AnimatePresence>
 
-                {/* Badge section removed since no items have badges */}
-
                 {/* Collapsed tooltip */}
                 {collapsed && (
                   <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#0d2e1d] text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl border border-white/10">
@@ -148,52 +143,15 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* FOOTER — Help Support */}
-      <div className="p-3 border-t border-white/10 shrink-0 space-y-2">
-        <AnimatePresence>
-          {!collapsed ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="flex flex-col gap-2 p-3 bg-[#133C27]/40 border border-white/10 rounded-2xl transition-all group"
-            >
-              <div className="flex items-center gap-2">
-                <Headset size={18} className="text-[#C59A2C] shrink-0" />
-                <div className="flex-1 text-left min-w-0">
-                  <p className="text-xs font-bold text-white leading-tight">Need Help?</p>
-                  <p className="text-[9px] text-white/50 leading-tight">We are here to support you</p>
-                </div>
-              </div>
-              <button
-                onClick={() => alert("Connecting to Vasiyam support...")}
-                className="w-full flex items-center justify-between px-3 py-2 bg-[#133C27] hover:bg-[#184B31] border border-[#C59A2C]/20 rounded-xl text-[10px] font-bold text-white transition-all select-none"
-              >
-                <span>Contact Support</span>
-                <span className="text-[#C59A2C]">&rarr;</span>
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition-all mx-auto"
-              title="Contact Support"
-              onClick={() => setCollapsed(false)}
-            >
-              <Headset size={18} className="text-[#C59A2C]" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* PROFILE SECTION AT BOTTOM */}
+      {/* FOOTER — Profile Section */}
+      <div className="p-3 border-t border-white/10 shrink-0">
         <AnimatePresence>
           {!collapsed ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-2xl cursor-pointer transition-all group border-t border-white/5 pt-3"
+              className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-2xl cursor-pointer transition-all group"
             >
               <div className="w-8 h-8 rounded-full bg-emerald-700 border border-emerald-500 flex items-center justify-center text-xs font-black text-white shrink-0 shadow-inner">
                 SA
@@ -208,7 +166,7 @@ export default function Sidebar() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="w-8 h-8 rounded-full bg-emerald-700 border border-emerald-500 flex items-center justify-center text-xs font-black text-white cursor-pointer mx-auto border-t border-white/5 mt-2 pt-2"
+              className="w-8 h-8 rounded-full bg-emerald-700 border border-emerald-500 flex items-center justify-center text-xs font-black text-white cursor-pointer mx-auto"
               title="Super Admin (superadmin@vasiyam.com)"
               onClick={() => setCollapsed(false)}
             >

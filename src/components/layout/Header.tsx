@@ -3,7 +3,6 @@
 import {
   Bell,
   ChevronDown,
-  CircleHelp,
   Command,
   Download,
   Search,
@@ -359,16 +358,6 @@ export default function Header() {
             </div>
           )}
         </div>
-
-        {/* Help Button */}
-        <button
-          type="button"
-          onClick={() => window.open("https://help.yourdomain.com", "_blank")}
-          aria-label="Help"
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#f4f6f5]"
-        >
-          <CircleHelp size={17} />
-        </button>
 
         {/* Profile Menu */}
         <div className="relative ml-2">
