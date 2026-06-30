@@ -37,6 +37,10 @@ const toneStyles = {
     icon: "bg-orange-50 text-orange-600",
     line: "#f97316",
   },
+  red: {
+    icon: "bg-red-50 text-red-600",
+    line: "#ef4444",
+  },
 } as const;
 
 const icons = [

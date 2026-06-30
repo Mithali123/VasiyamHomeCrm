@@ -88,8 +88,7 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "Today, 3:00 PM",
     createdDate: "2026-06-25",
     preferredLocation: "Thoraipakkam",
-    remarks: "Very interested in 3BHK east-facing apartment. Clean prospect.",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
+    remarks: "Very interested in 3BHK east-facing apartment. Clean prospect."
   },
   {
     id: "LD-2414",
@@ -108,8 +107,7 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "Tomorrow, 11:00 AM",
     createdDate: "2026-06-25",
     preferredLocation: "Medavakkam",
-    remarks: "Responded to Meta advertisement. Shared project details over WhatsApp.",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
+    remarks: "Responded to Meta advertisement. Shared project details over WhatsApp."
   },
   {
     id: "LD-2413",
@@ -128,8 +126,7 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "28 Jun, 4:00 PM",
     createdDate: "2026-06-25",
     preferredLocation: "Velachery",
-    remarks: "Financing approved. Seeking 3BHK flats with wood work options.",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
+    remarks: "Financing approved. Seeking 3BHK flats with wood work options."
   },
   {
     id: "LD-2412",
@@ -148,8 +145,7 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "28 Jun, 11:00 AM",
     createdDate: "2026-06-24",
     preferredLocation: "Adyar",
-    remarks: "Wants premium duplex flats. Referral from existing customer.",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
+    remarks: "Wants premium duplex flats. Referral from existing customer."
   },
   {
     id: "LD-2411",
@@ -168,8 +164,7 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "29 Jun, 3:30 PM",
     createdDate: "2026-06-24",
     preferredLocation: "OMR Sholinganallur",
-    remarks: "Demanding discount on registrar charges. Discussing final rates.",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
+    remarks: "Demanding discount on registrar charges. Discussing final rates."
   },
   {
     id: "LD-2410",
@@ -188,8 +183,7 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "30 Jun, 10:00 AM",
     createdDate: "2026-06-24",
     preferredLocation: "Adyar",
-    remarks: "Enquiry through 99acres portal for 3BHK flat.",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
+    remarks: "Enquiry through 99acres portal for 3BHK flat."
   },
   {
     id: "LD-2409",
@@ -208,8 +202,7 @@ const initialMockLeads: Lead[] = [
     nextFollowupText: "30 Jun, 2:00 PM",
     createdDate: "2026-06-23",
     preferredLocation: "Velachery",
-    remarks: "High budget lead. Seeking premium top floor penthouse.",
-    avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=facearea&facepad=2.2&w=150&h=150&q=80"
+    remarks: "High budget lead. Seeking premium top floor penthouse."
   }
 ];
 
@@ -1599,7 +1592,7 @@ export default function LeadsPage() {
                   <th className="py-3 px-4">Contact</th>
                   <th className="py-3 px-3">Source</th>
                   <th className="py-3 px-3">Project</th>
-                  <th className="py-3 px-3">Lead Stage</th>
+                  <th className="py-3 px-3 text-center">Lead Stage</th>
                   <th className="py-3 px-4">RM</th>
                   <th className="py-3 px-4">Last Activity</th>
                   <th className="py-3 px-3 text-center">Score</th>
@@ -1632,36 +1625,18 @@ export default function LeadsPage() {
                         </td>
                       )}
                       
-                      {/* Lead (Avatar + Name + ID underneath) */}
+                      {/* Lead (Name + ID) */}
                       <td className={cn("py-3 px-3", !isBulkMode && "pl-6")}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full border border-gray-200 dark:border-white/10 shrink-0 overflow-hidden shadow-sm transition-all group-hover:scale-105 flex items-center justify-center">
-                            {lead.avatar ? (
-                              <img
-                                src={lead.avatar}
-                                alt={lead.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className={cn(
-                                "w-full h-full flex items-center justify-center text-[10px] font-black text-white",
-                                getAvatarColorClass(lead.name)
-                              )}>
-                                {getInitials(lead.name)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-left whitespace-nowrap">
-                            <span 
-                              className="font-extrabold text-primary dark:text-[#C59A2C] leading-tight hover:underline cursor-pointer"
-                              onClick={() => handleOpenEdit(lead)}
-                            >
-                              {lead.name}
-                            </span>
-                            <span className="text-[10px] text-gray-400 font-bold">
-                              ({lead.id})
-                            </span>
-                          </div>
+                        <div className="flex items-center gap-1.5 text-left whitespace-nowrap">
+                          <span 
+                            className="font-extrabold text-primary dark:text-[#C59A2C] leading-tight hover:underline cursor-pointer"
+                            onClick={() => handleOpenEdit(lead)}
+                          >
+                            {lead.name}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-bold">
+                            ({lead.id})
+                          </span>
                         </div>
                       </td>
 
@@ -1699,10 +1674,10 @@ export default function LeadsPage() {
                       </td>
 
                       {/* Lead Stage Badge */}
-                      <td className="py-3 px-3 whitespace-nowrap">
+                      <td className="py-3 px-3 whitespace-nowrap text-center">
                         <span
                           className={cn(
-                            "px-2.5 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-tight",
+                            "px-2.5 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-tight inline-block",
                             getStageBadgeStyles(lead.stage)
                           )}
                         >
@@ -1710,31 +1685,18 @@ export default function LeadsPage() {
                         </span>
                       </td>
 
-                      {/* RM with initials circle avatar */}
+                      {/* RM Name */}
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          {lead.rm !== "Unassigned" ? (
-                            <img
-                              src={rmPhotos[lead.rm]}
-                              alt={lead.rm}
-                              className="w-5 h-5 rounded-full object-cover shrink-0 border border-gray-150"
-                            />
-                          ) : (
-                            <div className="w-5 h-5 rounded-full border flex items-center justify-center text-[8px] font-black shrink-0 bg-amber-50 text-amber-700 border-amber-200">
-                              ?
-                            </div>
+                        <span
+                          className={cn(
+                            "font-bold text-[11px]",
+                            lead.rm === "Unassigned"
+                              ? "text-amber-600 italic font-normal"
+                              : "text-gray-800 dark:text-gray-350"
                           )}
-                          <span
-                            className={cn(
-                              "font-bold text-[11px]",
-                              lead.rm === "Unassigned"
-                                ? "text-amber-600 italic font-normal"
-                                : "text-gray-800 dark:text-gray-350"
-                            )}
-                          >
-                            {lead.rm}
-                          </span>
-                        </div>
+                        >
+                          {lead.rm}
+                        </span>
                       </td>
 
                       {/* Last Activity (Time + action subtext) */}
