@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import FilterBar from "@/components/dashboard/FilterBar";
+import DashboardFilterBar from "@/components/dashboard/DashboardFilterBar";
 import KPIGrid from "@/components/dashboard/KPIGrid";
 import {
   LeadSources,
@@ -23,7 +23,7 @@ export default function DashboardPage() {
       animate={{ opacity: 1 }}
       className="dashboard-ui space-y-3 pb-6"
     >
-      <FilterBar />
+      <DashboardFilterBar />
       <KPIGrid />
 
       {/* Row 1: Sales Funnel & Lead Trend */}

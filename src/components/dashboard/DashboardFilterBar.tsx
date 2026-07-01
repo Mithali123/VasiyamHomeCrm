@@ -98,7 +98,7 @@ const getDateRangeDisplay = (range: string) => {
   return `${formatDate(now)} ${now.getFullYear()}`;
 };
 
-interface FilterBarProps {
+interface DashboardFilterBarProps {
   onFilterChange?: (filters: {
     dateRange: string;
     startDate: Date;
@@ -107,7 +107,7 @@ interface FilterBarProps {
   }) => void;
 }
 
-export default function FilterBar({ onFilterChange }: FilterBarProps) {
+export default function DashboardFilterBar({ onFilterChange }: DashboardFilterBarProps) {
   const [open, setOpen] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState("All");
   const [drawerOpen, setDrawerOpen] = useState(false);
