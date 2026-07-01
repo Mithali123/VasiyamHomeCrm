@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Sector, Tooltip, XAxis, YAxis } from "recharts";
+import { Cell, Line, LineChart, Pie, PieChart, PieSectorShapeProps, ResponsiveContainer, Sector, Tooltip, XAxis, YAxis } from "recharts";
 import { 
   Award, 
   CalendarDays, 
@@ -34,6 +34,7 @@ const CardTitle = ({
 // Sales Funnel Widget
 export function SalesFunnel() {
   const [hoveredStage, setHoveredStage] = useState<string | null>(null);
+  const [funnelPeriod, setFunnelPeriod] = useState("This Month");
 
   const X_center = 110;
   const W_max = 165;
@@ -44,8 +45,6 @@ export function SalesFunnel() {
 
   const w = (y: number) => W_max - (W_max - W_min) * (y / H);
 
-  // 3D cone perspective: curve depth proportional to band width
-  // Wider band = deeper ellipse arc (like looking into a 3D funnel from above)
   const getCv = (width: number) => width * 0.07;
 
   const getFrontSegmentPath = (index: number) => {
@@ -57,32 +56,30 @@ export function SalesFunnel() {
     const x_tr = X_center + w1 / 2;
     const x_bl = X_center - w2 / 2;
     const x_br = X_center + w2 / 2;
-    const cvTop    = getCv(w1); // top arc: wide band = big curve
-    const cvBottom = getCv(w2); // bottom arc: narrower = less curve
+    const cvTop    = getCv(w1);
+    const cvBottom = getCv(w2);
     return [
       `M ${x_tl} ${y1}`,
-      `Q ${X_center} ${y1 - cvTop} ${x_tr} ${y1}`,    // top rim bows UP
+      `Q ${X_center} ${y1 - cvTop} ${x_tr} ${y1}`,
       `L ${x_br} ${y2}`,
-      `Q ${X_center} ${y2 + cvBottom} ${x_bl} ${y2}`,  // bottom rim bows DOWN
+      `Q ${X_center} ${y2 + cvBottom} ${x_bl} ${y2}`,
       `Z`,
     ].join(' ');
   };
 
-  // White separator drawn as a curved path that perfectly bridges
-  // the bottom arc of band i and top arc of band i+1
   const getWhiteSeparator = (index: number) => {
     if (index >= funnelStages.length - 1) return null;
-    const y2 = index * (BAND_H + BAND_OFFSET) + BAND_OFFSET + BAND_H; // bottom of band i
-    const y1n = (index + 1) * (BAND_H + BAND_OFFSET) + BAND_OFFSET;   // top of band i+1
+    const y2 = index * (BAND_H + BAND_OFFSET) + BAND_OFFSET + BAND_H;
+    const y1n = (index + 1) * (BAND_H + BAND_OFFSET) + BAND_OFFSET;
     const w2  = w(y2);
     const w1n = w(y1n);
     const cv2  = getCv(w2);
     const cv1n = getCv(w1n);
     const d = [
       `M ${X_center - w2 / 2} ${y2}`,
-      `Q ${X_center} ${y2 + cv2} ${X_center + w2 / 2} ${y2}`,     // bottom arc of band i
+      `Q ${X_center} ${y2 + cv2} ${X_center + w2 / 2} ${y2}`,
       `L ${X_center + w1n / 2} ${y1n}`,
-      `Q ${X_center} ${y1n - cv1n} ${X_center - w1n / 2} ${y1n}`, // top arc of band i+1 (reversed)
+      `Q ${X_center} ${y1n - cv1n} ${X_center - w1n / 2} ${y1n}`,
       `Z`,
     ].join(' ');
     return <path key={`sep-${index}`} d={d} fill="white" className="pointer-events-none" />;
@@ -107,6 +104,15 @@ export function SalesFunnel() {
   const activeStageIndex = funnelStages.findIndex(s => s.name === hoveredStage);
   const activeStage = activeStageIndex !== -1 ? funnelStages[activeStageIndex] : null;
 
+  // Calculate total leads - convert to number
+  const totalLeads = parseInt(funnelStages[0]?.leads || "0");
+
+  const handleFunnelPeriodChange = (period: string) => {
+    setFunnelPeriod(period);
+    console.log(`Funnel period changed to: ${period}`);
+    // Here you would fetch new data based on the period
+  };
+
   return (
     <section className="h-full rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)]">
       <style dangerouslySetInnerHTML={{ __html: `
@@ -124,10 +130,21 @@ export function SalesFunnel() {
         title="Sales Funnel"
         subtitle="Track performance across the sales pipeline"
         action={
-          <button className="flex items-center gap-1.5 rounded-lg border border-[#e5e7e8] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#333] shadow-sm hover:bg-gray-50 transition-colors cursor-pointer">
-            <CalendarDays size={11} className="text-gray-500" />
-            This Month
-          </button>
+          <div className="flex overflow-hidden rounded-md border border-[#e4e6e7]">
+            {["This Week", "This Month", "This Quarter", "This Year"].map((item) => (
+              <button
+                key={item}
+                onClick={() => handleFunnelPeriodChange(item)}
+                className={`h-7 px-3 text-[7.5px] transition-colors cursor-pointer ${
+                  funnelPeriod === item
+                    ? "bg-[#073d2e] text-white"
+                    : "bg-white text-[#42484b] hover:bg-gray-50"
+                }`}
+              >
+                {item.replace("This ", "")}
+              </button>
+            ))}
+          </div>
         }
       />
 
@@ -190,7 +207,6 @@ export function SalesFunnel() {
                 style={{ left: pos.left, top: pos.top, width: 136 }}
               >
                 <div className="rounded-lg bg-[#0f1923] border border-gray-700/60 shadow-2xl px-3 py-2.5 text-white">
-                  {/* Arrow */}
                   <div className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-[#0f1923] border-l border-b border-gray-700/60" />
                   <div className="text-[8.5px] font-bold text-gray-300 mb-1">{activeStage.name}</div>
                   <div className="text-[13px] font-extrabold text-[#fbbf24] mb-1.5">
@@ -215,7 +231,7 @@ export function SalesFunnel() {
         {/* ── Right: Data Table ── */}
         <div className="flex flex-col justify-center">
           {/* Column headers */}
-          <div className="grid grid-cols-[1.25fr_.58fr_.62fr_.62fr_.58fr] gap-x-1.5 border-b border-[#edf0f1] pb-1.5 text-[7.5px] font-bold uppercase tracking-wider text-[#8b9195]">
+          <div className="grid grid-cols-[1.25fr_.58fr_.62fr_.62fr_.62fr] gap-x-1.5 border-b border-[#edf0f1] pb-1.5 text-[7.5px] font-bold uppercase tracking-wider text-[#8b9195]">
             <span>Stage</span>
             <span className="text-right">Leads</span>
             <span className="text-right">Conv%</span>
@@ -224,13 +240,25 @@ export function SalesFunnel() {
           </div>
 
           {/* Rows */}
-          {funnelStages.map((item) => {
+          {funnelStages.map((item, index) => {
             const isHovered = hoveredStage === item.name;
             const isAnyHovered = hoveredStage !== null;
+            
+            // Convert leads to number for calculations
+            const currentLeads = parseInt(item.leads);
+            const prevLeadsNum = index > 0 ? parseInt(funnelStages[index - 1].leads) : currentLeads;
+            
+            // Calculate drop percentage correctly
+            const dropValue = prevLeadsNum > 0 ? ((prevLeadsNum - currentLeads) / prevLeadsNum * 100) : 0;
+            const dropPercentage = index === 0 ? 0 : dropValue;
+            
+            // Calculate stage percentage
+            const stagePercentage = totalLeads > 0 ? (currentLeads / totalLeads * 100) : 0;
+
             return (
               <div
                 key={item.name}
-                className="grid grid-cols-[1.25fr_.58fr_.62fr_.62fr_.58fr] gap-x-1.5 border-b border-[#f1f2f3] last:border-0 py-[4.5px] text-[9px] items-center cursor-pointer"
+                className="grid grid-cols-[1.25fr_.58fr_.62fr_.62fr_.62fr] gap-x-1.5 border-b border-[#f1f2f3] last:border-0 py-[4.5px] text-[9px] items-center cursor-pointer"
                 style={{
                   opacity: isAnyHovered ? (isHovered ? 1 : 0.38) : 1,
                   background: isHovered ? "rgba(22,132,84,0.05)" : "transparent",
@@ -249,10 +277,10 @@ export function SalesFunnel() {
                 </span>
                 <span className="text-right font-bold text-[#111]">{item.leads}</span>
                 <span className="text-right text-[#48936a] font-medium">{item.conversion}</span>
-                <span className="text-right font-semibold" style={{ color: item.dropOff !== "—" ? "#d63b3f" : "#b0b7bc" }}>
-                  {item.dropOff}
+                <span className="text-right font-semibold" style={{ color: dropPercentage > 0 ? "#d63b3f" : "#b0b7bc" }}>
+                  {dropPercentage > 0 ? `${dropPercentage.toFixed(1)}%` : "—"}
                 </span>
-                <span className="text-right text-[#555]">{item.stage}</span>
+                <span className="text-right text-[#555]">{stagePercentage.toFixed(1)}%</span>
               </div>
             );
           })}
@@ -274,7 +302,6 @@ export function SalesFunnel() {
   );
 }
 
-
 const trendSummary = [
   { label: "Leads", value: "4,128", color: "#07543d", icon: Users },
   { label: "Conversions", value: "264", color: "#d89a11", icon: Award },
@@ -287,6 +314,7 @@ export function LeadTrend() {
   const handlePeriodChange = (newPeriod: string) => {
     setPeriod(newPeriod);
     console.log(`Period changed to: ${newPeriod}`);
+    // Here you would fetch new data based on the period
   };
 
   return (
@@ -313,7 +341,6 @@ export function LeadTrend() {
         }
       />
 
-      {/* Legend */}
       <div className="mb-1 flex justify-center gap-6 text-[8px] text-[#2d3335] select-none">
         <span>
           <i className="mr-2 inline-block h-1.5 w-3 rounded bg-[#073d2e]" />
@@ -329,7 +356,6 @@ export function LeadTrend() {
         </span>
       </div>
 
-      {/* Chart */}
       <div className="h-[190px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
@@ -377,7 +403,6 @@ export function LeadTrend() {
         </ResponsiveContainer>
       </div>
 
-      {/* Summary Stats */}
       <div className="grid grid-cols-3 border-t border-[#edf0f1] pt-3 select-none">
         {trendSummary.map(({ label, value, color, icon: Icon }) => (
           <div 
@@ -407,26 +432,41 @@ export function LeadTrend() {
 export function LeadSources() {
   const [hoveredSource, setHoveredSource] = useState<string | null>(null);
 
-  const renderActiveShape = (props: any) => {
-    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+  const activeIndex = leadSources.findIndex((s) => s.name === hoveredSource);
+  const activeSource = activeIndex !== -1 ? leadSources[activeIndex] : null;
+
+  const renderSector = (props: PieSectorShapeProps) => {
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, isActive } = props;
+    
+    if (isActive) {
+      return (
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={(innerRadius || 0) - 2}
+          outerRadius={(outerRadius || 0) + 4}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill || "#ccc"}
+          style={{
+            filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.15))",
+          }}
+        />
+      );
+    }
+    
     return (
       <Sector
         cx={cx}
         cy={cy}
-        innerRadius={innerRadius - 2}
-        outerRadius={outerRadius + 4}
+        innerRadius={innerRadius || 0}
+        outerRadius={outerRadius || 0}
         startAngle={startAngle}
         endAngle={endAngle}
-        fill={fill}
-        style={{
-          filter: "drop-shadow(0 3px 6px rgba(0,0,0,0.15))",
-        }}
+        fill={fill || "#ccc"}
       />
     );
   };
-
-  const activeIndex = leadSources.findIndex((s) => s.name === hoveredSource);
-  const activeSource = activeIndex !== -1 ? leadSources[activeIndex] : null;
 
   return (
     <section className="h-full rounded-xl border border-[#e5e7e8] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.03)]">
@@ -436,23 +476,20 @@ export function LeadSources() {
       />
 
       <div className="flex items-center gap-5">
-        {/* Donut Chart */}
         <div className="relative h-[126px] w-[126px] shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={leadSources}
                 dataKey="value"
+                nameKey="name"
                 innerRadius={39}
                 outerRadius={61}
                 paddingAngle={1}
-                stroke="#fff"
+                stroke="#ffffff"
                 strokeWidth={1}
-                // @ts-ignore
-                activeIndex={activeIndex !== -1 ? activeIndex : undefined}
-                // @ts-ignore
-                activeShape={renderActiveShape}
-                onMouseEnter={(_, index) => {
+                shape={renderSector}
+                onMouseEnter={(_data: unknown, index: number) => {
                   if (leadSources[index]) {
                     setHoveredSource(leadSources[index].name);
                   }
@@ -479,7 +516,6 @@ export function LeadSources() {
             </PieChart>
           </ResponsiveContainer>
 
-          {/* Center Text */}
           <div 
             className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center rounded-full transition-all duration-300 select-none"
           >
@@ -513,7 +549,6 @@ export function LeadSources() {
           </div>
         </div>
 
-        {/* Source List */}
         <div className="min-w-0 flex-1 space-y-1.5">
           {leadSources.map((item) => {
             const isHovered = hoveredSource === item.name;

@@ -6,6 +6,9 @@ import {
   Command,
   Download,
   Search,
+  FileText,
+  FileSpreadsheet,
+  File,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -89,6 +92,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -104,6 +108,7 @@ export default function Header() {
         setProfileOpen(false);
         setNotificationsOpen(false);
         setShowSearchResults(false);
+        setExportOpen(false);
       }
     };
 
@@ -112,6 +117,7 @@ export default function Header() {
         setProfileOpen(false);
         setNotificationsOpen(false);
         setShowSearchResults(false);
+        setExportOpen(false);
       }
     };
 
@@ -162,6 +168,7 @@ export default function Header() {
     setNotificationsOpen((open) => !open);
     setProfileOpen(false);
     setShowSearchResults(false);
+    setExportOpen(false);
   };
 
   const handleMarkAllRead = () => {
@@ -197,6 +204,7 @@ export default function Header() {
     setProfileOpen((open) => !open);
     setNotificationsOpen(false);
     setShowSearchResults(false);
+    setExportOpen(false);
   };
 
   const handleProfileNavigation = (path: string) => {
@@ -204,9 +212,18 @@ export default function Header() {
     setProfileOpen(false);
   };
 
-  // Export report handler
-  const handleExportReport = () => {
-    alert("Report export started. You'll be notified when it's ready.");
+  // Export handlers
+  const handleExportToggle = () => {
+    setExportOpen((open) => !open);
+    setProfileOpen(false);
+    setNotificationsOpen(false);
+    setShowSearchResults(false);
+  };
+
+  const handleExport = (format: string) => {
+    setExportOpen(false);
+    console.log(`Exporting report as ${format}...`);
+    alert(`Report exported as ${format.toUpperCase()}. Download will start shortly.`);
   };
 
   return (
@@ -408,14 +425,52 @@ export default function Header() {
           )}
         </div>
 
-        {/* Export Report Button */}
-        <button
-          type="button"
-          onClick={handleExportReport}
-          className="ml-1 hidden h-9 items-center gap-2 rounded-lg bg-[#063a2c] px-4 text-[10px] font-semibold text-white shadow-sm transition-all hover:bg-[#0a4d3a] active:scale-95 xl:flex"
-        >
-          <Download size={12} /> Export Report <ChevronDown size={11} />
-        </button>
+        {/* Export Report Button with Dropdown */}
+        <div className="relative ml-1">
+          <button
+            type="button"
+            onClick={handleExportToggle}
+            aria-expanded={exportOpen}
+            className="flex h-9 items-center gap-2 rounded-lg bg-[#063a2c] px-4 text-[10px] font-semibold text-white shadow-sm transition-all hover:bg-[#0a4d3a] active:scale-95"
+          >
+            <Download size={12} /> Export Report <ChevronDown size={11} className={`transition-transform ${exportOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {exportOpen && (
+            <div className="absolute right-0 top-11 z-50 w-48 overflow-hidden rounded-xl border border-[#e5e7e8] bg-white p-1.5 text-[12px] shadow-xl">
+              <button
+                onClick={() => handleExport("pdf")}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-[#f4f7f5] transition-colors"
+              >
+                <FileText size={15} className="text-red-500" />
+                <div>
+                  <div className="text-[11px] font-semibold text-[#141718]">PDF</div>
+                  <div className="text-[9px] text-[#727a7e]">Portable Document Format</div>
+                </div>
+              </button>
+              <button
+                onClick={() => handleExport("csv")}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-[#f4f7f5] transition-colors"
+              >
+                <FileSpreadsheet size={15} className="text-green-600" />
+                <div>
+                  <div className="text-[11px] font-semibold text-[#141718]">CSV</div>
+                  <div className="text-[9px] text-[#727a7e]">Comma Separated Values</div>
+                </div>
+              </button>
+              <button
+                onClick={() => handleExport("xlsx")}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-[#f4f7f5] transition-colors"
+              >
+                <File size={15} className="text-blue-600" />
+                <div>
+                  <div className="text-[11px] font-semibold text-[#141718]">Excel</div>
+                  <div className="text-[9px] text-[#727a7e]">Microsoft Excel Spreadsheet</div>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
