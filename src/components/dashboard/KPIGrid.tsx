@@ -158,7 +158,7 @@ export default function KPIGrid() {
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {kpiData.map((item, index) => {
         const Icon = icons[index];
-        const style = toneStyles[item.tone];
+        const style = toneStyles[item.tone as keyof typeof toneStyles];
         const isDown = item.label === "Conversion Rate";
         const isPipeline = item.label === "Pipeline";
 
