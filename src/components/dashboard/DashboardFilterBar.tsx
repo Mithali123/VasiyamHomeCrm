@@ -6,16 +6,16 @@ import FilterDrawer from "./FilterDrawer";
 import { motion, AnimatePresence } from "framer-motion";
 
 const filters = [
-  { label: "Project", options: ["All", "Vasiyam Greens", "Vasiyam Hills", "Vasiyam Heights"] },
-  { label: "RM", options: ["All", "Arvind Kumar", "Priya Sharma", "Meera Rajan"] },
-  { label: "Source", options: ["All", "Website", "Referral", "Instagram", "99acres"] },
-  { label: "Stage", options: ["All", "New", "Contacted", "Qualified", "Site Visit", "Negotiation"] },
-  { label: "Budget", options: ["All", "Below ₹50L", "₹50L–₹1Cr", "₹1Cr–₹2Cr", "Above ₹2Cr"] },
+  { label: "All Projects", options: ["All Projects", "Vasiyam Pride", "King's Garden", "BGR Garden", "Vasiyam Florence", "Grandeur", "Aspire", "Magnum"] },
+  { label: "All RMs", options: ["All RMs", "Arvind Kumar", "Priya Sharma", "Meera Rajan"] },
+  { label: "All Sources", options: ["All Sources", "Website", "Referral", "Instagram", "99acres"] },
+  { label: "All Stages", options: ["All Stages", "New", "Contacted", "Qualified", "Site Visit", "Negotiation"] },
+  { label: "All Budgets", options: ["All Budgets", "Below ₹50L", "₹50L–₹1Cr", "₹1Cr–₹2Cr", "Above ₹2Cr"] },
 ];
 
 // Date range calculation function
 const getDateRange = (range: string) => {
-  const now = new Date(2026, 5, 29);
+  const now = new Date();
   let startDate = new Date(now);
   let endDate = new Date(now);
 
@@ -60,7 +60,7 @@ const getDateRange = (range: string) => {
 
 // Get formatted date display
 const getDateRangeDisplay = (range: string) => {
-  const now = new Date(2026, 5, 29);
+  const now = new Date();
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   
   const formatDate = (date: Date) => {
@@ -263,20 +263,9 @@ export default function DashboardFilterBar({ onFilterChange }: DashboardFilterBa
             exit={{ opacity: 0, scale: 0.9, x: -10 }}
             transition={{ duration: 0.15 }}
             onClick={() => {
-              const resetSelected = filters.map(() => "All");
-              setSelected(resetSelected);
+              setSelected(filters.map(() => "All"));
               setDateRange("All");
-              setTimeout(() => {
-                const { startDate, endDate } = getDateRange("All");
-                if (onFilterChange) {
-                  onFilterChange({
-                    dateRange: "All",
-                    startDate,
-                    endDate,
-                    selectedFilters: resetSelected,
-                  });
-                }
-              }, 100);
+              setTimeout(() => applyFilters(), 100);
             }}
             className="flex h-10 items-center gap-1.5 px-2 text-[10px] font-semibold text-[#475569] hover:text-[#0f172a] hover:bg-slate-50 rounded-lg transition-all cursor-pointer"
           >

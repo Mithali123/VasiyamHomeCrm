@@ -159,8 +159,22 @@ export default function KPIGrid() {
       {kpiData.map((item, index) => {
         const Icon = icons[index];
         const style = toneStyles[item.tone as keyof typeof toneStyles];
-        const isDown = item.label === "Conversion Rate";
-        const isPipeline = item.label === "Pipeline";
+        
+        let trendIcon = null;
+        let trendColor = 'text-[#9aa0aa]';
+
+        if (item.change) {
+          const numValue = parseFloat(item.change.replace(/[^0-9.]/g, ''));
+          const isUp = numValue > 0;
+          
+          if (isUp) {
+            trendIcon = <TrendingUp size={10} strokeWidth={2.2} />;
+            trendColor = 'text-emerald-600';
+          } else {
+            trendIcon = <TrendingDown size={10} strokeWidth={2.2} />;
+            trendColor = 'text-red-500';
+          }
+        }
 
         return (
           <motion.article
@@ -175,73 +189,61 @@ export default function KPIGrid() {
               y: -2,
               boxShadow: "0 10px 25px rgba(15,23,42,0.07)",
             }}
-            className="relative min-h-[190px] min-w-0 overflow-hidden rounded-[16px] border border-[#e8dfd2] bg-white p-4 shadow-[0_2px_6px_rgba(15,23,42,0.04)]"
+            className="relative min-h-[150px] max-h-[165px] min-w-0 overflow-hidden rounded-[16px] border border-[#e8dfd2] bg-white p-3.5 shadow-[0_2px_6px_rgba(15,23,42,0.04)]"
           >
-            <div className="grid grid-cols-[44px_minmax(0,1fr)] items-start gap-3">
+            <div className="grid grid-cols-[40px_minmax(0,1fr)] items-start gap-2.5">
               <div
-                className={`flex h-11 w-11 items-center justify-center rounded-full shadow-[0_2px_5px_rgba(15,23,42,0.07)] ${style.icon}`}
+                className={`flex h-9 w-9 items-center justify-center rounded-full shadow-[0_2px_5px_rgba(15,23,42,0.07)] ${style.icon}`}
               >
-                <Icon size={21} strokeWidth={1.8} />
+                <Icon size={18} strokeWidth={1.8} />
               </div>
 
-              <div className="min-w-0 pt-0.5">
-                <p className="text-[10px] font-bold uppercase leading-[1.1] tracking-[0.01em] text-[#15191d]">
+              <div className="min-w-0">
+                <p className="text-[9px] font-bold uppercase leading-[1.1] tracking-[0.01em] text-[#15191d]">
                   {item.label}
                 </p>
 
                 <p
-                  className={`mt-1 whitespace-nowrap font-bold leading-none tracking-tight text-[#101418] ${
-                    isPipeline ? "text-[18px]" : "text-[22px]"
+                  className={`mt-0.5 whitespace-nowrap font-bold leading-none tracking-tight text-[#101418] ${
+                    item.label === "Pipeline" ? "text-[17px]" : "text-[20px]"
                   }`}
                 >
                   {item.value}
                 </p>
-
-                {item.change ? (
-                  <div className="mt-2 flex flex-wrap items-start gap-x-1 text-[9px] leading-[1.15]">
-                    <span
-                      className={`flex shrink-0 items-center font-semibold ${
-                        isDown
-                          ? "text-red-500"
-                          : "text-emerald-600"
-                      }`}
-                    >
-                      {isDown ? (
-                        <TrendingDown
-                          size={10}
-                          strokeWidth={2.2}
-                        />
-                      ) : (
-                        <TrendingUp
-                          size={10}
-                          strokeWidth={2.2}
-                        />
-                      )}
-
-                      {item.change}
-                    </span>
-
-                    <span className="text-[#9aa0aa]">
-                      {item.detail}
-                    </span>
-                  </div>
-                ) : (
-                  <p className="mt-2 text-[9px] leading-[1.15] text-[#9aa0aa]">
-                    <span className="font-semibold text-red-500">
-                      21 overdue
-                    </span>
-
-                    <span> • 65 today</span>
-                  </p>
-                )}
               </div>
             </div>
 
-            <div className="absolute bottom-4 left-4 right-4 h-[44px]">
+            {/* Sparkline */}
+            <div className="absolute bottom-7 left-3.5 right-3.5 h-[38px]">
               <Sparkline
                 index={index}
                 color={style.line}
               />
+            </div>
+
+            {/* Trend info with context */}
+            <div className="absolute bottom-1.5 left-3.5 right-3.5">
+              {item.change ? (
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={`flex items-center gap-1 text-[9px] font-semibold ${trendColor}`}
+                  >
+                    {trendIcon}
+                    {item.change}
+                  </span>
+                  <span className="text-[7px] text-[#9aa0aa] font-medium">
+                    vs last month
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[8px]">
+                  <span className="font-semibold text-red-500">
+                    21 overdue
+                  </span>
+                  <span className="text-[#9aa0aa]">•</span>
+                  <span className="text-[#9aa0aa]">65 today</span>
+                </div>
+              )}
             </div>
           </motion.article>
         );
