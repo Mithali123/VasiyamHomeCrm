@@ -6,11 +6,11 @@ import FilterDrawer from "./FilterDrawer";
 import { motion, AnimatePresence } from "framer-motion";
 
 const filters = [
-  { label: "All Projects", options: ["All Projects", "Vasiyam Greens", "Vasiyam Hills", "Vasiyam Heights"] },
-  { label: "All RMs", options: ["All RMs", "Arvind Kumar", "Priya Sharma", "Meera Rajan"] },
-  { label: "All Sources", options: ["All Sources", "Website", "Referral", "Instagram", "99acres"] },
-  { label: "All Stages", options: ["All Stages", "New", "Contacted", "Qualified", "Site Visit", "Negotiation"] },
-  { label: "All Budgets", options: ["All Budgets", "Below ₹50L", "₹50L–₹1Cr", "₹1Cr–₹2Cr", "Above ₹2Cr"] },
+  { label: "Project", options: ["All", "Vasiyam Greens", "Vasiyam Hills", "Vasiyam Heights"] },
+  { label: "RM", options: ["All", "Arvind Kumar", "Priya Sharma", "Meera Rajan"] },
+  { label: "Source", options: ["All", "Website", "Referral", "Instagram", "99acres"] },
+  { label: "Stage", options: ["All", "New", "Contacted", "Qualified", "Site Visit", "Negotiation"] },
+  { label: "Budget", options: ["All", "Below ₹50L", "₹50L–₹1Cr", "₹1Cr–₹2Cr", "Above ₹2Cr"] },
 ];
 
 // Date range calculation function
@@ -20,6 +20,10 @@ const getDateRange = (range: string) => {
   let endDate = new Date(now);
 
   switch (range) {
+    case "All":
+      startDate = new Date(2000, 0, 1);
+      endDate = new Date(2100, 11, 31);
+      break;
     case "Today":
       startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -66,7 +70,9 @@ const getDateRangeDisplay = (range: string) => {
     return `${day} ${month}`;
   };
 
-  if (range === "Today") {
+  if (range === "All") {
+    return "All Time";
+  } else if (range === "Today") {
     return `${formatDate(now)} ${now.getFullYear()}`;
   } else if (range === "This Month") {
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -103,14 +109,14 @@ interface FilterBarProps {
 
 export default function FilterBar({ onFilterChange }: FilterBarProps) {
   const [open, setOpen] = useState<number | null>(null);
-  const [dateRange, setDateRange] = useState("This Month");
+  const [dateRange, setDateRange] = useState("All");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selected, setSelected] = useState(filters.map((item) => item.label));
+  const [selected, setSelected] = useState(filters.map(() => "All"));
   const root = useRef<HTMLDivElement>(null);
 
   const isAnyFilterActive =
-    selected.some((val, idx) => val !== filters[idx].label) ||
-    dateRange !== "This Month";
+    selected.some((val) => val !== "All") ||
+    dateRange !== "All";
 
   useEffect(() => {
     const close = (event: MouseEvent) => {
@@ -183,7 +189,7 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
           <CalendarDays size={16} className="text-[#202426]" />
           <span className="min-w-0 flex-1">
             <span className="block text-[10px] font-semibold text-[#202426]">
-              {dateRange}
+              {dateRange === "All" ? "Date" : dateRange}
             </span>
             <span className="block text-[8px] text-[#777e83]">
               {getDateRangeDisplay(dateRange)}
@@ -194,7 +200,7 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
 
         {open === -1 && (
           <div className="absolute left-0 top-12 z-50 w-44 overflow-hidden rounded-lg border border-[#e6e7e8] bg-white p-1 shadow-xl">
-            {["Today", "This Week", "This Month", "This Quarter", "This Year"].map((option) => (
+            {["All", "Today", "This Week", "This Month", "This Quarter", "This Year"].map((option) => (
               <button
                 key={option}
                 onClick={() => handleDateSelect(option)}
@@ -210,31 +216,35 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
       <div className="hidden h-7 w-px bg-[#eceeef] xl:block" />
 
       {/* Filter Dropdowns */}
-      {filters.map((filter, index) => (
-        <div key={filter.label} className="relative">
-          <button
-            onClick={() => setOpen(open === index ? null : index)}
-            className="flex h-10 min-w-[118px] items-center justify-between gap-3 rounded-lg border border-[#e6e7e8] px-3 text-[10px] font-medium text-[#303537] hover:bg-gray-50 transition-colors"
-          >
-            {selected[index]}
-            <ChevronDown size={11} className={open === index ? "rotate-180" : ""} />
-          </button>
+      {filters.map((filter, index) => {
+        return (
+          <div key={filter.label} className="relative">
+            <button
+              onClick={() => setOpen(open === index ? null : index)}
+              className="flex h-10 min-w-[100px] max-w-[220px] items-center justify-between gap-2 rounded-lg border border-[#e6e7e8] px-3 text-[10px] font-medium text-[#303537] hover:bg-gray-50 transition-colors"
+            >
+              <span className="truncate text-left font-semibold">
+                {selected[index] === "All" ? filter.label : selected[index]}
+              </span>
+              <ChevronDown size={11} className={open === index ? "rotate-180 shrink-0 text-gray-400" : "shrink-0 text-gray-400"} />
+            </button>
 
-          {open === index && (
-            <div className="absolute left-0 top-12 z-50 w-44 overflow-hidden rounded-lg border border-[#e6e7e8] bg-white p-1 shadow-xl">
-              {filter.options.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => handleFilterSelect(index, option)}
-                  className="block w-full rounded-md px-3 py-2.5 text-left text-[11px] hover:bg-[#f3f7f5] transition-colors"
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
+            {open === index && (
+              <div className="absolute left-0 top-12 z-50 w-44 overflow-hidden rounded-lg border border-[#e6e7e8] bg-white p-1 shadow-xl">
+                {filter.options.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => handleFilterSelect(index, option)}
+                    className="block w-full rounded-md px-3 py-2.5 text-left text-[11px] hover:bg-[#f3f7f5] transition-colors"
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {/* More Filters */}
       <button
@@ -253,8 +263,20 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
             exit={{ opacity: 0, scale: 0.9, x: -10 }}
             transition={{ duration: 0.15 }}
             onClick={() => {
-              setSelected(filters.map((item) => item.label));
-              setDateRange("This Month");
+              const resetSelected = filters.map(() => "All");
+              setSelected(resetSelected);
+              setDateRange("All");
+              setTimeout(() => {
+                const { startDate, endDate } = getDateRange("All");
+                if (onFilterChange) {
+                  onFilterChange({
+                    dateRange: "All",
+                    startDate,
+                    endDate,
+                    selectedFilters: resetSelected,
+                  });
+                }
+              }, 100);
             }}
             className="flex h-10 items-center gap-1.5 px-2 text-[10px] font-semibold text-[#475569] hover:text-[#0f172a] hover:bg-slate-50 rounded-lg transition-all cursor-pointer"
           >

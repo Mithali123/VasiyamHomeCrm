@@ -469,7 +469,7 @@ const Sparkline = ({ color, points, index }: { color: string; points: [number, n
   const fillPath = `${linePath} L 100 30 L 0 30 Z`;
 
   return (
-    <div className="w-full h-8 mt-3.5 relative overflow-visible">
+    <div className="w-full h-full relative overflow-visible">
       <svg className="w-full h-full overflow-visible" viewBox="0 0 100 30">
         <defs>
           <linearGradient id={`sparkline-gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
@@ -601,6 +601,8 @@ function CustomSelect({ label, value, options, onChange, icon: Icon }: CustomDro
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  const isDefault = value === "All";
+
   return (
     <div className="relative w-full" ref={ref}>
       <button
@@ -610,7 +612,7 @@ function CustomSelect({ label, value, options, onChange, icon: Icon }: CustomDro
         <div className="flex items-center gap-1.5 min-w-0">
           <Icon size={13} className="text-gray-400 dark:text-[#C59A2C] shrink-0" />
           <span className="truncate text-[#1F1F1F] dark:text-white font-bold">
-            {value}
+            {isDefault ? label : value}
           </span>
         </div>
         <ChevronDown size={12} className={cn("text-gray-400 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
@@ -658,13 +660,13 @@ export default function LeadsPage() {
   const [toasts, setToasts] = useState<{ id: string; type: "success" | "error"; message: string }[]>([]);
 
   // Filter Bar states
-  const [filterStatus, setFilterStatus] = useState("All Status");
-  const [filterSource, setFilterSource] = useState("All Sources");
-  const [filterRM, setFilterRM] = useState("All RMs");
-  const [filterBudgetRange, setFilterBudgetRange] = useState("All Budgets");
-  const [filterScoreRange, setFilterScoreRange] = useState("Score");
-  const [filterCreatedDate, setFilterCreatedDate] = useState("This Month");
-  const [filterFollowUpStatus, setFilterFollowUpStatus] = useState("All Follow-ups");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterSource, setFilterSource] = useState("All");
+  const [filterRM, setFilterRM] = useState("All");
+  const [filterBudgetRange, setFilterBudgetRange] = useState("All");
+  const [filterScoreRange, setFilterScoreRange] = useState("All");
+  const [filterCreatedDate, setFilterCreatedDate] = useState("All");
+  const [filterFollowUpStatus, setFilterFollowUpStatus] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
 
   // Modals visibility
@@ -683,7 +685,7 @@ export default function LeadsPage() {
   const [transferToRM, setTransferToRM] = useState("Meera Nair");
   const [transferProject, setTransferProject] = useState("All Projects");
   const [transferStage, setTransferStage] = useState("All Stages");
-  const [transferStatus, setTransferStatus] = useState("");
+  const [transferLeadName, setTransferLeadName] = useState("");
 
   // Form Validation & Input
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -749,15 +751,56 @@ export default function LeadsPage() {
   };
 
   // Re-calculate KPI values based on state
-  const summaryKPIs = useMemo(() => {
-    const total = 2415 + (leads.length - initialMockLeads.length);
-    const newToday = 842 + leads.filter((l) => l.createdDate === "2026-06-25" && l.stage === "New").length;
+    const summaryKPIs = useMemo(() => {
     const assigned = 1156 + leads.filter((l) => l.rm !== "Unassigned" && !initialMockLeads.some((il) => il.id === l.id)).length;
     const unassigned = 128 + leads.filter((l) => l.rm === "Unassigned" && !initialMockLeads.some((il) => il.id === l.id)).length;
     const qualified = 312 + leads.filter((l) => l.stage === "Qualified" && !initialMockLeads.some((il) => il.id === l.id)).length;
 
-    return { total, newToday, assigned, unassigned, qualified };
+    return { assigned, unassigned, qualified };
   }, [leads]);
+
+  const rmWorkloads = useMemo(() => {
+    const localArun = leads.filter(l => l.rm === "Arun Kumar" && !initialMockLeads.some(il => il.id === l.id)).length;
+    const localMeera = leads.filter(l => l.rm === "Meera Nair" && !initialMockLeads.some(il => il.id === l.id)).length;
+    const localDivya = leads.filter(l => l.rm === "Divya Sharma" && !initialMockLeads.some(il => il.id === l.id)).length;
+    
+    return [
+      { name: "Arun", count: 520 + localArun },
+      { name: "Meera", count: 410 + localMeera },
+      { name: "Divya", count: 226 + localDivya }
+    ];
+  }, [leads]);
+
+  const unassignedSources = useMemo(() => {
+    const localWebsite = leads.filter(l => l.rm === "Unassigned" && l.source === "Website" && !initialMockLeads.some(il => il.id === l.id)).length;
+    const localAds = leads.filter(l => l.rm === "Unassigned" && (l.source.includes("Ads") || l.source.includes("Facebook") || l.source.includes("Meta") || l.source.includes("Google")) && !initialMockLeads.some(il => il.id === l.id)).length;
+    
+    return [
+      { name: "Website", count: 78 + localWebsite },
+      { name: "Ads/Social", count: 50 + localAds }
+    ];
+  }, [leads]);
+
+  const followupBreakdown = useMemo(() => {
+    const localOverdue = leads.filter(l => {
+      if (l.stage !== "Qualified") return false;
+      if (!l.nextFollowupText || l.nextFollowupText === "None") return false;
+      return !l.nextFollowupText.toLowerCase().includes("today") && !l.nextFollowupText.toLowerCase().includes("tomorrow");
+    }).length;
+    const localToday = leads.filter(l => l.stage === "Qualified" && l.nextFollowupText.toLowerCase().includes("today")).length;
+    
+    return {
+      overdue: 48 + localOverdue,
+      today: 84 + localToday
+    };
+  }, [leads]);
+
+  const matchedLeadsByName = useMemo(() => {
+    if (!transferLeadName.trim()) return [];
+    const queries = transferLeadName.split(',').map(q => q.toLowerCase().trim()).filter(q => q.length > 0);
+    if (queries.length === 0) return [];
+    return leads.filter(l => queries.some(query => l.name.toLowerCase().includes(query)));
+  }, [leads, transferLeadName]);
 
   const resetForm = () => {
     setFormData({
@@ -960,12 +1003,13 @@ export default function LeadsPage() {
     setTransferToRM("Meera Nair");
     setTransferProject("All Projects");
     setTransferStage("All Stages");
-    setTransferStatus("");
+    setTransferLeadName("");
     setIsTransferRMOpen(true);
   };
 
   const handleTransferSubmit = () => {
-    if (transferFromRM === transferToRM) {
+    const hasNameFilter = transferLeadName.trim().length > 0;
+    if (!hasNameFilter && transferFromRM === transferToRM) {
       showToast("error", "From RM and To RM must be different.");
       return;
     }
@@ -975,23 +1019,25 @@ export default function LeadsPage() {
       return;
     }
 
-    if (confirm(`Transfer ${count} leads from ${transferFromRM} to ${transferToRM}?`)) {
+    const confirmMessage = hasNameFilter
+      ? `Transfer ${count} leads to ${transferToRM}?`
+      : `Transfer ${count} leads from ${transferFromRM} to ${transferToRM}?`;
+
+    if (confirm(confirmMessage)) {
       setLeads((prev) =>
         prev.map((l) => {
-          const isFromRM = l.rm === transferFromRM;
+          const isFromRM = hasNameFilter ? true : (l.rm === transferFromRM);
           const isProjectMatch = transferProject === "All Projects" || l.project === transferProject;
           const isStageMatch = transferStage === "All Stages" || l.stage === transferStage;
-          let isStatusMatch = true;
-          if (transferStatus.trim()) {
-            const query = transferStatus.toLowerCase().trim();
-            const stageMatch = l.stage.toLowerCase().includes(query);
-            const sourceMatch = l.source.toLowerCase().includes(query);
-            const projectMatch = l.project.toLowerCase().includes(query);
-            const nameMatch = l.name.toLowerCase().includes(query);
-            isStatusMatch = stageMatch || sourceMatch || projectMatch || nameMatch;
+          let isNameMatch = true;
+          if (transferLeadName.trim()) {
+            const queries = transferLeadName.split(',').map(q => q.toLowerCase().trim()).filter(q => q.length > 0);
+            if (queries.length > 0) {
+              isNameMatch = queries.some(query => l.name.toLowerCase().includes(query));
+            }
           }
 
-          if (isFromRM && isProjectMatch && isStageMatch && isStatusMatch) {
+          if (isFromRM && isProjectMatch && isStageMatch && isNameMatch) {
             return {
               ...l,
               rm: transferToRM,
@@ -1009,20 +1055,20 @@ export default function LeadsPage() {
 
   const leadsToTransfer = useMemo(() => {
     return leads.filter((lead) => {
-      if (lead.rm !== transferFromRM) return false;
+      const hasNameFilter = transferLeadName.trim().length > 0;
+      if (!hasNameFilter && lead.rm !== transferFromRM) return false;
       if (transferProject !== "All Projects" && lead.project !== transferProject) return false;
       if (transferStage !== "All Stages" && lead.stage !== transferStage) return false;
-      if (transferStatus.trim()) {
-        const query = transferStatus.toLowerCase().trim();
-        const stageMatch = lead.stage.toLowerCase().includes(query);
-        const sourceMatch = lead.source.toLowerCase().includes(query);
-        const projectMatch = lead.project.toLowerCase().includes(query);
-        const nameMatch = lead.name.toLowerCase().includes(query);
-        if (!stageMatch && !sourceMatch && !projectMatch && !nameMatch) return false;
+      if (hasNameFilter) {
+        const queries = transferLeadName.split(',').map(q => q.toLowerCase().trim()).filter(q => q.length > 0);
+        if (queries.length > 0) {
+          const nameMatch = queries.some(query => lead.name.toLowerCase().includes(query));
+          if (!nameMatch) return false;
+        }
       }
       return true;
     });
-  }, [leads, transferFromRM, transferProject, transferStage, transferStatus]);
+  }, [leads, transferFromRM, transferProject, transferStage, transferLeadName]);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -1040,13 +1086,13 @@ export default function LeadsPage() {
 
   const handleClearFilters = () => {
     setSearchQuery("");
-    setFilterStatus("All Status");
-    setFilterSource("All Sources");
-    setFilterRM("All RMs");
-    setFilterBudgetRange("All Budgets");
-    setFilterScoreRange("Score");
-    setFilterCreatedDate("This Month");
-    setFilterFollowUpStatus("All Follow-ups");
+    setFilterStatus("All");
+    setFilterSource("All");
+    setFilterRM("All");
+    setFilterBudgetRange("All");
+    setFilterScoreRange("All");
+    setFilterCreatedDate("All");
+    setFilterFollowUpStatus("All");
     setSortBy("newest");
     setSelectedLeadIds([]);
     setCurrentPage(1);
@@ -1068,19 +1114,19 @@ export default function LeadsPage() {
       );
     }
 
-    if (filterStatus !== "All Status") {
+    if (filterStatus !== "All") {
       result = result.filter((l) => l.stage === filterStatus);
     }
 
-    if (filterRM !== "All RMs") {
+    if (filterRM !== "All") {
       result = result.filter((l) => l.rm === filterRM);
     }
 
-    if (filterSource !== "All Sources") {
+    if (filterSource !== "All") {
       result = result.filter((l) => l.source === filterSource);
     }
 
-    if (filterBudgetRange !== "All Budgets") {
+    if (filterBudgetRange !== "All") {
       if (filterBudgetRange === "< 50 Lakhs") {
         result = result.filter((l) => l.budget < 5000000);
       } else if (filterBudgetRange === "50 Lakhs - 1 Crore") {
@@ -1092,7 +1138,7 @@ export default function LeadsPage() {
       }
     }
 
-    if (filterScoreRange !== "Score") {
+    if (filterScoreRange !== "All") {
       if (filterScoreRange === "Hot Lead (80-100)") {
         result = result.filter((l) => l.score >= 80 && l.score <= 100);
       } else if (filterScoreRange === "Warm Lead (60-79)") {
@@ -1104,11 +1150,29 @@ export default function LeadsPage() {
       }
     }
 
-    if (filterCreatedDate !== "All Dates" && filterCreatedDate !== "This Month") {
-      // Keep basic Created date filter defaults if needed
+    if (filterCreatedDate !== "All") {
+      const now = new Date(2026, 5, 25);
+      result = result.filter((l) => {
+        const leadDate = new Date(l.createdDate);
+        if (filterCreatedDate === "Today") {
+          return l.createdDate === "2026-06-25";
+        }
+        if (filterCreatedDate === "Yesterday") {
+          return l.createdDate === "2026-06-24";
+        }
+        if (filterCreatedDate === "Last 7 Days") {
+          const diffTime = Math.abs(now.getTime() - leadDate.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          return diffDays <= 7;
+        }
+        if (filterCreatedDate === "This Month") {
+          return leadDate.getMonth() === 5 && leadDate.getFullYear() === 2026;
+        }
+        return true;
+      });
     }
 
-    if (filterFollowUpStatus !== "All Follow-ups") {
+    if (filterFollowUpStatus !== "All") {
       if (filterFollowUpStatus === "Today") {
         result = result.filter((l) => l.nextFollowupText.toLowerCase().includes("today"));
       } else if (filterFollowUpStatus === "Tomorrow") {
@@ -1169,108 +1233,118 @@ export default function LeadsPage() {
       {/* ──────────────────────────────────────────────────────── */}
       {/* 1. METRICS GRID & QUICK ACTIONS */}
       {/* ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row gap-5">
-        {/* Metric Cards Carousel */}
-        <div className="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
-          
-          {/* Card 1: Total Leads */}
-          <div className="bg-white dark:bg-[#0D2E1D] p-5 rounded-2xl border border-[#E8E2D6] dark:border-white/10 shadow-[0_1.5px_4px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[155px]">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 flex items-center justify-center shrink-0 shadow-sm">
-                <Users size={18} />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-[10px] font-bold tracking-wider text-gray-450 dark:text-gray-400 uppercase leading-none">Total Leads</span>
-                <h3 className="text-2xl font-black text-[#1F1F1F] dark:text-white mt-2 leading-none">
-                  {summaryKPIs.total.toLocaleString()}
-                </h3>
-                <div className="flex items-center gap-0.5 mt-2.5 text-[9.5px] text-[#16A34A] font-bold leading-none">
-                  <TrendingUp size={10} className="shrink-0" />
-                  <span>12% <span className="text-gray-400 font-normal ml-0.5">vs last 30 days</span></span>
+      <div className="flex flex-col lg:flex-row items-start gap-4">
+        {/* Metric Cards Grid */}
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+
+          {/* Card 1: Assigned Leads */}
+          <div className="relative overflow-hidden bg-white/70 dark:bg-[#0D2E1D]/60 backdrop-blur-md p-4 rounded-xl border border-[#E8E2D6] dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[175px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(197,154,44,0.06)] dark:hover:shadow-[0_8px_20px_rgba(197,154,44,0.12)] hover:border-amber-300/40 dark:hover:border-amber-500/20 group">
+            <div>
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[9px] font-bold tracking-wider text-gray-400 dark:text-gray-405 uppercase leading-none">Assigned Leads</span>
+                <div className="w-7 h-7 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#C59A2C] dark:text-[#C59A2C] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                  <Calendar size={14} />
                 </div>
               </div>
-            </div>
-            <Sparkline index={0} color="#16A34A" points={[[0, 25], [11, 18], [22, 20], [33, 10], [44, 22], [55, 17], [66, 16], [77, 8], [88, 15], [100, 7]]} />
-          </div>
-
-          {/* Card 2: New Leads */}
-          <div className="bg-white dark:bg-[#0D2E1D] p-5 rounded-2xl border border-[#E8E2D6] dark:border-white/10 shadow-[0_1.5px_4px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[155px]">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300 flex items-center justify-center shrink-0 shadow-sm">
-                <Sparkles size={16} />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-[10px] font-bold tracking-wider text-gray-450 dark:text-gray-400 uppercase leading-none">New Leads</span>
-                <h3 className="text-xl font-black text-[#1F1F1F] dark:text-white mt-2 leading-none">
-                  {summaryKPIs.newToday.toLocaleString()}
-                </h3>
-                <div className="flex items-center gap-0.5 mt-2.5 text-[9.5px] text-[#16A34A] font-bold leading-none">
-                  <TrendingUp size={10} className="shrink-0" />
-                  <span>8% <span className="text-gray-400 font-normal ml-0.5">vs last 30 days</span></span>
-                </div>
-              </div>
-            </div>
-            <Sparkline index={1} color="#2563EB" points={[[0, 28], [11, 20], [22, 21], [33, 10], [44, 22], [55, 18], [66, 17], [77, 8], [88, 14], [100, 5]]} />
-          </div>
-
-          {/* Card 3: Assigned Leads */}
-          <div className="bg-white dark:bg-[#0D2E1D] p-5 rounded-2xl border border-[#E8E2D6] dark:border-white/10 shadow-[0_1.5px_4px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[155px]">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#C59A2C] dark:text-[#C59A2C] flex items-center justify-center shrink-0 shadow-sm">
-                <Calendar size={18} />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-[10px] font-bold tracking-wider text-gray-450 dark:text-gray-400 uppercase leading-none">Assigned Leads</span>
-                <h3 className="text-xl font-black text-[#1F1F1F] dark:text-white mt-2 leading-none">
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <h3 className="text-2xl font-black text-[#1F1F1F] dark:text-white leading-none">
                   {summaryKPIs.assigned.toLocaleString()}
                 </h3>
-                <div className="flex items-center gap-0.5 mt-2.5 text-[9.5px] text-[#16A34A] font-bold leading-none">
-                  <TrendingUp size={10} className="shrink-0" />
-                  <span>10% <span className="text-gray-400 font-normal ml-0.5">vs last 30 days</span></span>
-                </div>
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] bg-emerald-50 dark:bg-emerald-950/30 text-[#16A34A] font-extrabold leading-none">
+                  <TrendingUp size={7} className="shrink-0" />
+                  10%
+                </span>
+              </div>
+              <div className="w-full mt-2 h-8 opacity-80 group-hover:opacity-100 transition-opacity">
+                <Sparkline index={0} color="#C59A2C" points={[[0, 27], [10, 20], [20, 16], [30, 18], [40, 8], [50, 22], [60, 17], [70, 15], [80, 6], [90, 16], [100, 11]]} />
               </div>
             </div>
-            <Sparkline index={2} color="#C59A2C" points={[[0, 27], [10, 20], [20, 16], [30, 18], [40, 8], [50, 22], [60, 17], [70, 15], [80, 6], [90, 16], [100, 11]]} />
+            
+            <div className="mt-3 pt-2.5 border-t border-[#E8E2D6]/60 dark:border-white/5 flex flex-col gap-1">
+              <span className="text-[7.5px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider">RM Load Distribution</span>
+              <div className="flex flex-wrap items-center gap-1">
+                {rmWorkloads.map((rm) => (
+                  <div key={rm.name} className="flex items-center gap-1 px-1 py-0.5 rounded text-[8.5px] font-bold bg-amber-500/5 text-amber-700 dark:text-amber-300 border border-amber-500/10 dark:border-amber-500/20">
+                    <span>{rm.name}</span>
+                    <span className="font-black text-[#1F1F1F] dark:text-white bg-[#F8F5EE] dark:bg-white/5 px-1 rounded-sm text-[7.5px]">{rm.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Card 4: Unassigned Leads */}
-          <div className="bg-white dark:bg-[#0D2E1D] p-5 rounded-2xl border border-[#E8E2D6] dark:border-white/10 shadow-[0_1.5px_4px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[155px]">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 flex items-center justify-center shrink-0 shadow-sm">
-                <UserMinus size={18} />
+          {/* Card 2: Unassigned Leads */}
+          <div className="relative overflow-hidden bg-white/70 dark:bg-[#0D2E1D]/60 backdrop-blur-md p-4 rounded-xl border border-[#E8E2D6] dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[175px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(139,92,246,0.06)] dark:hover:shadow-[0_8px_20px_rgba(139,92,246,0.12)] hover:border-purple-300/40 dark:hover:border-purple-500/20 group">
+            <div>
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[9px] font-bold tracking-wider text-gray-450 dark:text-gray-400 uppercase leading-none">Unassigned Leads</span>
+                <div className="w-7 h-7 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                  <UserMinus size={14} />
+                </div>
               </div>
-              <div className="flex flex-col text-left">
-                <span className="text-[10px] font-bold tracking-wider text-gray-450 dark:text-gray-400 uppercase leading-none">Unassigned Leads</span>
-                <h3 className="text-xl font-black text-[#1F1F1F] dark:text-white mt-2 leading-none">
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <h3 className="text-2xl font-black text-[#1F1F1F] dark:text-white leading-none">
                   {summaryKPIs.unassigned.toLocaleString()}
                 </h3>
-                <div className="flex items-center gap-0.5 mt-2.5 text-[9.5px] text-red-500 font-bold leading-none">
-                  <TrendingDown size={10} className="shrink-0" />
-                  <span>5% <span className="text-gray-400 font-normal ml-0.5">vs last 30 days</span></span>
-                </div>
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] bg-red-50 dark:bg-red-950/30 text-red-500 font-extrabold leading-none">
+                  <TrendingDown size={7} className="shrink-0" />
+                  5%
+                </span>
+              </div>
+              <div className="w-full mt-2 h-8 opacity-80 group-hover:opacity-100 transition-opacity">
+                <Sparkline index={1} color="#8B5CF6" points={[[0, 27], [9, 20], [18, 16], [27, 18], [36, 8], [45, 22], [54, 17], [63, 17], [72, 14], [81, 6], [90, 15], [100, 10]]} />
               </div>
             </div>
-            <Sparkline index={3} color="#8B5CF6" points={[[0, 27], [9, 20], [18, 16], [27, 18], [36, 8], [45, 22], [54, 17], [63, 17], [72, 14], [81, 6], [90, 15], [100, 10]]} />
+
+            <div className="mt-3 pt-2.5 border-t border-[#E8E2D6]/60 dark:border-white/5 flex flex-col gap-1">
+              <span className="text-[7.5px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Top Sources</span>
+              <div className="flex flex-wrap items-center gap-1">
+                {unassignedSources.map((src) => (
+                  <div key={src.name} className="flex items-center gap-1 px-1 py-0.5 rounded text-[8.5px] font-bold bg-purple-500/5 text-purple-700 dark:text-purple-300 border border-purple-500/10 dark:border-purple-500/20">
+                    <span>{src.name}</span>
+                    <span className="font-black text-[#1F1F1F] dark:text-white bg-[#F8F5EE] dark:bg-white/5 px-1 rounded-sm text-[7.5px]">{src.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Card 5: Follow-up Needed */}
-          <div className="bg-white dark:bg-[#0D2E1D] p-5 rounded-2xl border border-[#E8E2D6] dark:border-white/10 shadow-[0_1.5px_4px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[155px]">
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 flex items-center justify-center shrink-0 shadow-sm">
-                <Clock size={18} />
+          {/* Card 3: Follow-up Needed */}
+          <div className="relative overflow-hidden bg-white/70 dark:bg-[#0D2E1D]/60 backdrop-blur-md p-4 rounded-xl border border-[#E8E2D6] dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[175px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(239,68,68,0.06)] dark:hover:shadow-[0_8px_20px_rgba(239,68,68,0.12)] hover:border-red-300/40 dark:hover:border-red-500/20 group">
+            <div>
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[9px] font-bold tracking-wider text-gray-455 dark:text-gray-400 uppercase leading-none">Follow-up Needed</span>
+                <div className="w-7 h-7 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-105">
+                  <Clock size={14} />
+                </div>
               </div>
-              <div className="flex flex-col text-left">
-                <span className="text-[10px] font-bold tracking-wider text-gray-450 dark:text-gray-400 uppercase leading-none">Follow-up Needed</span>
-                <h3 className="text-xl font-black text-[#1F1F1F] dark:text-white mt-2 leading-none">
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <h3 className="text-2xl font-black text-[#1F1F1F] dark:text-white leading-none">
                   {summaryKPIs.qualified.toLocaleString()}
                 </h3>
-                <div className="flex items-center gap-0.5 mt-2.5 text-[9.5px] text-[#16A34A] font-bold leading-none">
-                  <TrendingUp size={10} className="shrink-0" />
-                  <span>15% <span className="text-gray-400 font-normal ml-0.5">vs last 30 days</span></span>
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] bg-emerald-50 dark:bg-emerald-950/30 text-[#16A34A] font-extrabold leading-none">
+                  <TrendingUp size={7} className="shrink-0" />
+                  15%
+                </span>
+              </div>
+              <div className="w-full mt-2 h-8 opacity-80 group-hover:opacity-100 transition-opacity">
+                <Sparkline index={2} color="#EF4444" points={[[0, 28], [9, 21], [18, 16], [27, 18], [36, 8], [45, 22], [54, 18], [63, 17], [72, 10], [81, 4], [90, 14], [100, 5]]} />
+              </div>
+            </div>
+
+            <div className="mt-3 pt-2.5 border-t border-[#E8E2D6]/60 dark:border-white/5 flex flex-col gap-1">
+              <span className="text-[7.5px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Urgency Breakdown</span>
+              <div className="flex flex-wrap items-center gap-1">
+                <div className="flex items-center gap-1 px-1 py-0.5 rounded text-[8.5px] font-bold bg-red-500/5 text-red-600 dark:text-red-400 border border-red-500/10 dark:border-red-500/20">
+                  <span>Overdue</span>
+                  <span className="font-black text-red-650 dark:text-red-300 bg-red-50 dark:bg-white/5 px-1 rounded-sm text-[7.5px]">{followupBreakdown.overdue}</span>
+                </div>
+                <div className="flex items-center gap-1 px-1 py-0.5 rounded text-[8.5px] font-bold bg-amber-500/5 text-amber-700 dark:text-amber-300 border border-amber-500/10 dark:border-amber-500/20">
+                  <span>Today</span>
+                  <span className="font-black text-amber-650 dark:text-amber-300 bg-amber-50 dark:bg-white/5 px-1 rounded-sm text-[7.5px]">{followupBreakdown.today}</span>
                 </div>
               </div>
             </div>
-            <Sparkline index={4} color="#EF4444" points={[[0, 28], [9, 21], [18, 16], [27, 18], [36, 8], [45, 22], [54, 18], [63, 17], [72, 10], [81, 4], [90, 14], [100, 5]]} />
           </div>
         </div>
 
@@ -1326,131 +1400,127 @@ export default function LeadsPage() {
       {/* ──────────────────────────────────────────────────────── */}
       {/* 2. FILTER ROW & CREATE LEAD BUTTON */}
       {/* ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center gap-3 pt-1.5 w-full">
+      <div className="w-full flex flex-wrap items-center gap-2 text-xs pt-1.5">
         
-        {/* Aligned Row of Filters */}
-        <div className="w-full flex flex-wrap items-center gap-2 text-xs">
-          
-          {/* Status custom select */}
-          <div className="w-full sm:w-[125px] shrink-0">
-            <CustomSelect
-              label="Status"
-              value={filterStatus}
-              options={["All Status", ...leadStages]}
-              icon={Target}
-              onChange={setFilterStatus}
-            />
-          </div>
-
-          {/* Sources custom select */}
-          <div className="w-full sm:w-[125px] shrink-0">
-            <CustomSelect
-              label="Sources"
-              value={filterSource}
-              options={["All Sources", ...leadSources]}
-              icon={Globe}
-              onChange={setFilterSource}
-            />
-          </div>
-
-          {/* RMs custom select */}
-          <div className="w-full sm:w-[125px] shrink-0">
-            <CustomSelect
-              label="RMs"
-              value={filterRM}
-              options={["All RMs", ...relationshipManagers]}
-              icon={UserCheck}
-              onChange={setFilterRM}
-            />
-          </div>
-
-          {/* Budget Range custom select */}
-          <div className="w-full sm:w-[130px] shrink-0">
-            <CustomSelect
-              label="Budget"
-              value={filterBudgetRange}
-              options={["All Budgets", "< 50 Lakhs", "50 Lakhs - 1 Crore", "1 - 2 Crores", "> 2 Crores"]}
-              icon={DollarSign}
-              onChange={setFilterBudgetRange}
-            />
-          </div>
-
-          {/* Score Range custom select */}
-          <div className="w-full sm:w-[135px] shrink-0">
-            <CustomSelect
-              label="Score"
-              value={filterScoreRange}
-              options={["Score", "Hot Lead (80-100)", "Warm Lead (60-79)", "Medium Lead (40-59)", "Cold Lead (<40)"]}
-              icon={Star}
-              onChange={setFilterScoreRange}
-            />
-          </div>
-
-          {/* Date Range custom select */}
-          <div className="w-full sm:w-[120px] shrink-0">
-            <CustomSelect
-              label="Date Range"
-              value={filterCreatedDate}
-              options={["This Month", "Today", "Yesterday", "Last 7 Days"]}
-              icon={Calendar}
-              onChange={setFilterCreatedDate}
-            />
-          </div>
-
-          {/* Follow-up Status custom select */}
-          <div className="w-full sm:w-[130px] shrink-0">
-            <CustomSelect
-              label="Follow-up"
-              value={filterFollowUpStatus}
-              options={["All Follow-ups", "Today", "Tomorrow", "Overdue", "No Follow-up"]}
-              icon={Clock}
-              onChange={setFilterFollowUpStatus}
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-1.5 ml-auto shrink-0 w-full sm:w-auto justify-end">
-            {/* Table/Bulk Toggle */}
-            <div className="flex items-center rounded-xl bg-[#F8F5EE] dark:bg-white/5 p-0.5 border border-gray-250 dark:border-white/10 text-xs shrink-0 select-none mr-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsBulkMode(false);
-                  setSelectedLeadIds([]);
-                }}
-                className={cn(
-                  "px-2.5 py-1 rounded-lg text-[9px] font-black transition-all cursor-pointer",
-                  !isBulkMode 
-                    ? "bg-[#133C27] text-white shadow-sm" 
-                    : "text-gray-500 dark:text-gray-400 hover:text-[#133C27] dark:hover:text-white"
-                )}
-              >
-                Table
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsBulkMode(true);
-                }}
-                className={cn(
-                  "px-2.5 py-1 rounded-lg text-[9px] font-black transition-all cursor-pointer",
-                  isBulkMode 
-                    ? "bg-[#133C27] text-white shadow-sm" 
-                    : "text-gray-500 dark:text-gray-400 hover:text-[#133C27] dark:hover:text-white"
-                )}
-              >
-                Bulk
-              </button>
-            </div>
-            <button
-              onClick={handleClearFilters}
-              className="flex items-center justify-center gap-1 py-2 px-2.5 border border-transparent rounded-xl text-xs font-bold text-gray-500 hover:text-primary dark:hover:text-[#C59A2C] transition-colors pl-1 shrink-0"
-            >
-              <RefreshCw size={11} className="text-gray-400 shrink-0 mr-1" />
-              <span>Clear</span>
-            </button>
-          </div>
+        {/* Status custom select */}
+        <div className="flex-1 min-w-[95px] max-w-[150px] shrink-0">
+          <CustomSelect
+            label="Status"
+            value={filterStatus}
+            options={["All", ...leadStages]}
+            icon={Target}
+            onChange={setFilterStatus}
+          />
         </div>
+
+        {/* Sources custom select */}
+        <div className="flex-1 min-w-[95px] max-w-[155px] shrink-0">
+          <CustomSelect
+            label="Source"
+            value={filterSource}
+            options={["All", ...leadSources]}
+            icon={Globe}
+            onChange={setFilterSource}
+          />
+        </div>
+
+        {/* RMs custom select */}
+        <div className="flex-1 min-w-[80px] max-w-[145px] shrink-0">
+          <CustomSelect
+            label="RM"
+            value={filterRM}
+            options={["All", ...relationshipManagers]}
+            icon={UserCheck}
+            onChange={setFilterRM}
+          />
+        </div>
+
+        {/* Budget Range custom select */}
+        <div className="flex-1 min-w-[95px] max-w-[165px] shrink-0">
+          <CustomSelect
+            label="Budget"
+            value={filterBudgetRange}
+            options={["All", "< 50 Lakhs", "50 Lakhs - 1 Crore", "1 - 2 Crores", "> 2 Crores"]}
+            icon={DollarSign}
+            onChange={setFilterBudgetRange}
+          />
+        </div>
+
+        {/* Score Range custom select */}
+        <div className="flex-1 min-w-[90px] max-w-[180px] shrink-0">
+          <CustomSelect
+            label="Score"
+            value={filterScoreRange}
+            options={["All", "Hot Lead (80-100)", "Warm Lead (60-79)", "Medium Lead (40-59)", "Cold Lead (<40)"]}
+            icon={Star}
+            onChange={setFilterScoreRange}
+          />
+        </div>
+
+        {/* Date Range custom select */}
+        <div className="flex-1 min-w-[85px] max-w-[150px] shrink-0">
+          <CustomSelect
+            label="Date"
+            value={filterCreatedDate}
+            options={["All", "This Month", "Today", "Yesterday", "Last 7 Days"]}
+            icon={Calendar}
+            onChange={setFilterCreatedDate}
+          />
+        </div>
+
+        {/* Follow-up Status custom select */}
+        <div className="flex-1 min-w-[105px] max-w-[180px] shrink-0">
+          <CustomSelect
+            label="Follow-up"
+            value={filterFollowUpStatus}
+            options={["All", "Today", "Tomorrow", "Overdue", "No Follow-up"]}
+            icon={Clock}
+            onChange={setFilterFollowUpStatus}
+          />
+        </div>
+
+        {/* Enable/Disable Bulk Toggle */}
+        <div className="flex items-center rounded-xl bg-[#F8F5EE] dark:bg-white/5 p-0.5 border border-gray-250 dark:border-white/10 text-xs shrink-0 select-none ml-auto">
+          <button
+            type="button"
+            onClick={() => {
+              setIsBulkMode(false);
+              setSelectedLeadIds([]);
+            }}
+            className={cn(
+              "px-2.5 py-1 rounded-lg text-[9px] font-black transition-all cursor-pointer whitespace-nowrap",
+              !isBulkMode 
+                ? "bg-[#133C27] text-white shadow-sm" 
+                : "text-gray-500 dark:text-gray-400 hover:text-[#133C27] dark:hover:text-white"
+            )}
+          >
+            Disable Bulk
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsBulkMode(true);
+            }}
+            className={cn(
+              "px-2.5 py-1 rounded-lg text-[9px] font-black transition-all cursor-pointer whitespace-nowrap",
+              isBulkMode 
+                ? "bg-[#133C27] text-white shadow-sm" 
+                : "text-gray-500 dark:text-gray-400 hover:text-[#133C27] dark:hover:text-white"
+            )}
+          >
+            Enable Bulk
+          </button>
+        </div>
+
+        {/* Clear Button */}
+        <button
+          onClick={handleClearFilters}
+          className="flex items-center justify-center gap-1 py-2 px-2.5 border border-transparent rounded-xl text-xs font-bold text-gray-500 hover:text-primary dark:hover:text-[#C59A2C] transition-colors pl-1 shrink-0"
+        >
+          <RefreshCw size={11} className="text-gray-400 shrink-0 mr-1" />
+          <span>Clear</span>
+        </button>
+
       </div>
 
       {/* ──────────────────────────────────────────────────────── */}
@@ -2528,9 +2598,9 @@ export default function LeadsPage() {
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1.5">
+                  <div className={cn("flex flex-col gap-1.5 transition-all", transferLeadName.trim().length > 0 && "opacity-40 pointer-events-none")}>
                     <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">
-                      From RM
+                      From RM {transferLeadName.trim().length > 0 && "(Bypassed)"}
                     </label>
                     <select
                       value={transferFromRM}
@@ -2603,15 +2673,61 @@ export default function LeadsPage() {
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">
-                    Status (Optional filter keyword)
+                    Lead Name (Optional filter)
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Website, Facebook, Called..."
-                    value={transferStatus}
-                    onChange={(e) => setTransferStatus(e.target.value)}
+                    placeholder="e.g. Rajesh, Priya..."
+                    value={transferLeadName}
+                    onChange={(e) => setTransferLeadName(e.target.value)}
                     className="py-2.5 px-3 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d2e1d] rounded-xl text-xs text-[#1F1F1F] dark:text-white focus:outline-none focus:border-[#C59A2C]"
                   />
+                  
+                  {matchedLeadsByName.length > 0 && (
+                    <div className="mt-1.5 p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-150 dark:border-white/5 space-y-2 max-h-[140px] overflow-y-auto">
+                      <span className="text-[8px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block text-left">
+                        Matching Leads ({matchedLeadsByName.length})
+                      </span>
+                      <div className="space-y-2">
+                        {matchedLeadsByName.slice(0, 3).map((lead) => (
+                          <div key={lead.id} className="flex justify-between items-center text-[11px] border-b border-gray-100/50 dark:border-white/5 pb-1.5 last:border-b-0 last:pb-0">
+                            <div className="flex flex-col text-left">
+                              <span className="font-extrabold text-gray-700 dark:text-gray-250 leading-snug">{lead.name}</span>
+                              <span className="text-[9px] text-gray-400 dark:text-gray-500">{lead.project} • {lead.stage}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9px] bg-amber-50 dark:bg-amber-950/40 text-[#C59A2C] px-1.5 py-0.5 rounded font-extrabold leading-none">
+                                Current RM: {lead.rm}
+                              </span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setTransferFromRM(lead.rm);
+                                    const names = transferLeadName.split(',').map(n => n.trim());
+                                    if (names.length > 0) {
+                                      names[names.length - 1] = lead.name;
+                                    } else {
+                                      names.push(lead.name);
+                                    }
+                                    // Deduplicate and filter out empty segments
+                                    const uniqueNames = Array.from(new Set(names.filter(n => n.length > 0)));
+                                    setTransferLeadName(uniqueNames.join(', ') + ', ');
+                                  }}
+                                  className="text-[9px] text-[#133C27] dark:text-[#C59A2C] font-black hover:underline cursor-pointer select-none bg-emerald-50 dark:bg-[#133C27] hover:bg-emerald-100 dark:hover:bg-[#184b31] px-1.5 py-0.5 rounded transition-all"
+                                >
+                                  Select
+                                </button>
+                            </div>
+                          </div>
+                        ))}
+                        {matchedLeadsByName.length > 3 && (
+                          <span className="text-[9px] text-gray-400 dark:text-gray-500 block text-center italic">
+                            and {matchedLeadsByName.length - 3} more matching...
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Live Preview Card */}
