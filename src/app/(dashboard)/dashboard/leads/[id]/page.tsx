@@ -176,6 +176,9 @@ export default function LeadDetailPage() {
   const [privateNoteContent, setPrivateNoteContent] = useState("");
   const [privateNoteAuthor, setPrivateNoteAuthor] = useState("Arun Kumar");
 
+  const [chatMessageContent, setChatMessageContent] = useState("");
+  const [chatSenderRole, setChatSenderRole] = useState<"RM" | "Admin">("RM");
+
   const sortedActivities = useMemo(() => {
     if (!details || !details.activities) return [];
     return [...details.activities].sort((a, b) => {
@@ -395,6 +398,14 @@ export default function LeadDetailPage() {
     reloadData();
   };
 
+  const submitInternalChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatMessageContent.trim()) return;
+    addLeadComment(leadId, chatMessageContent, "Manager Note", "Admin Manager");
+    setChatMessageContent("");
+    reloadData();
+  };
+
   const leadPriority = activeFollowup?.priority || (details?.followupHistory && details.followupHistory[0]?.priority) || "Medium";  const propertyFacing = basicLead.id === "LD-2415" ? "East" :
                          basicLead.id === "LD-2413" ? "East" : "Not Specified";
   const propertyArea = basicLead.id === "LD-2415" ? "1,420 sqft" :
@@ -548,21 +559,13 @@ export default function LeadDetailPage() {
                   <span>Assign relationship manager</span>
                 </button>
               )}
-              
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="w-full">
                 <button
                   onClick={() => alert(`Exporting lead profile sheet as Excel report...`)}
-                  className="py-2.5 border border-[#E8E2D6] bg-white hover:bg-gray-55 text-gray-700 text-[10px] font-black rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2.5 border border-[#E8E2D6] bg-white hover:bg-gray-55 text-gray-700 text-[10px] font-black rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Upload size={12} className="rotate-180 text-gray-400" />
-                  <span>Export</span>
-                </button>
-                <button
-                  onClick={() => alert(`Archiving lead history data secure records cabinet...`)}
-                  className="py-2.5 border border-[#E8E2D6] bg-white hover:bg-red-50 hover:text-red-700 text-gray-700 text-[10px] font-black rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <Archive size={12} className="text-gray-400" />
-                  <span>Archive</span>
+                  <span>Export Profile Sheet</span>
                 </button>
               </div>
             </div>
@@ -689,6 +692,7 @@ export default function LeadDetailPage() {
             <div className="flex border-b border-[#E8E2D6] overflow-x-auto bg-gray-50 text-xs font-bold text-gray-505 shrink-0 sticky top-0 z-10 scrollbar-none">
               {[
                 { id: "timeline", label: "Timeline Feed", icon: History },
+                { id: "conversations", label: "RM-Admin Chat", icon: MessageSquare },
                 { id: "followups", label: "Follow-up Log", icon: Calendar },
                 { id: "negotiation", label: "Negotiation Hub", icon: TrendingUp },
                 { id: "documents", label: "Document Vault", icon: FileText },
@@ -768,27 +772,447 @@ export default function LeadDetailPage() {
                 </div>
               )}
 
-              {/* Follow-up Section */}
-              {activeTab === "followups" && (
+              {/* RM-Admin Chat Discussion Section */}
+              {activeTab === "conversations" && (
                 <div className="space-y-6">
-                  <FollowupAnalytics followupHistory={details.followupHistory} />
-                  
-                  <ActiveFollowupCard
-                    activeFollowup={activeFollowup}
-                    leadContext={{
-                      id: basicLead.id,
-                      name: basicLead.name,
-                      mobile: basicLead.mobile,
-                      project: basicLead.project,
-                      stage: basicLead.stage,
-                      rm: basicLead.rm
-                    }}
-                    readOnly={true}
-                  />
+                  <div className="flex items-center justify-between border-b pb-2 border-[#E8E2D6]">
+                    <h4 className="text-[10px] font-black uppercase text-[#1A3C2A] tracking-wider flex items-center gap-1.5">
+                      <MessageSquare size={12} className="text-[#C9A82C]" />
+                      <span>RM & Admin Discussion Hub</span>
+                    </h4>
+                    <span className="text-[9px] text-gray-400 font-bold">
+                      {details.comments.length} Total Messages
+                    </span>
+                  </div>
 
-                  <FollowupHistoryLog followupHistory={details.followupHistory} currentRM={basicLead.rm} />
+                  {/* Message Thread List */}
+                  {details.comments.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400 italic text-xs">
+                      No internal messages logged yet. Start the conversation below.
+                    </div>
+                  ) : (
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
+                      {[...details.comments]
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .map((msg) => {
+                          const isAdmin = msg.author.toLowerCase().includes("admin") || msg.type === "Manager Note" || msg.type === "Internal";
+                          return (
+                            <div
+                              key={msg.id}
+                              className={cn(
+                                "flex items-start gap-3 p-3 rounded-2xl border text-xs max-w-[85%] transition-all",
+                                isAdmin
+                                  ? "bg-amber-50/40 border-amber-100/60 ml-auto flex-row-reverse"
+                                  : "bg-[#FAF8F5] border-[#E8E2D6]"
+                              )}
+                            >
+                              <div className={cn(
+                                "w-8 h-8 rounded-full flex items-center justify-center font-extrabold shrink-0 text-[10px]",
+                                isAdmin
+                                  ? "bg-[#0D2E1D] text-[#C9A82C]"
+                                  : "bg-emerald-500 text-white"
+                              )}>
+                                {msg.author.split(" ").map(n => n[0]).join("")}
+                              </div>
+
+                              <div className="space-y-1">
+                                <div className={cn(
+                                  "flex items-center gap-1.5 flex-wrap",
+                                  isAdmin && "justify-end"
+                                )}>
+                                  <span className="font-extrabold text-[#1A3C2A]">{msg.author}</span>
+                                  <span className={cn(
+                                    "px-1.5 py-0.2 rounded text-[7px] font-black uppercase tracking-tight",
+                                    isAdmin
+                                      ? "bg-[#FAF3E3] text-[#B5982C] border border-[#EBE3D0]"
+                                      : "bg-[#E8F5EC] text-emerald-800 border border-emerald-200"
+                                  )}>
+                                    {isAdmin ? "Admin / Mgr" : "RM Advisor"}
+                                  </span>
+                                  <span className="text-[8.5px] text-gray-400 font-medium">{msg.date}</span>
+                                </div>
+                                <p className={cn(
+                                  "text-gray-700 font-bold leading-normal mt-1 break-words text-[11px]",
+                                  isAdmin && "text-right"
+                                )}>
+                                  {msg.content}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+
+                  {/* Send Message Form */}
+                  <form onSubmit={submitInternalChat} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <span className="text-[10px] font-black uppercase text-primary tracking-wider">Post Message / Discussion note</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <textarea
+                        value={chatMessageContent}
+                        onChange={(e) => setChatMessageContent(e.target.value)}
+                        placeholder="Type a message to discuss with RM..."
+                        className="w-full text-xs font-medium p-2 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none focus:ring-1 focus:ring-primary min-h-[60px] resize-none"
+                        required
+                      />
+                    </div>
+
+                    <div className="flex justify-end pt-1">
+                      <button
+                        type="submit"
+                        className="px-4 py-1.5 bg-[#133C27] hover:bg-[#0d2e1d] text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+                      >
+                        Send Message
+                      </button>
+                    </div>
+                  </form>
                 </div>
               )}
+
+              {/* Follow-up Section */}
+              {activeTab === "followups" && (() => {
+                const followups = details.followupHistory || [];
+                const totalFollowups = followups.length;
+                const pendingFollowups = followups.filter(f => ["Scheduled", "Upcoming", "Due Today"].includes(f.status)).length;
+                const overdueFollowups = followups.filter(f => f.status === "Overdue").length;
+                
+                const nextScheduled = activeFollowup;
+
+                // Alerts calculation
+                const alertsList = [];
+                if (overdueFollowups > 0) {
+                  alertsList.push(`${overdueFollowups} follow-up${overdueFollowups > 1 ? 's are' : ' is'} currently overdue. Immediate contact required.`);
+                }
+                
+                const completedFollowups = followups.filter(f => f.status === "Completed");
+                if (completedFollowups.length > 0) {
+                  const latest = [...completedFollowups].sort((a, b) => new Date(b.completedDate || b.scheduledDate).getTime() - new Date(a.completedDate || a.scheduledDate).getTime())[0];
+                  const diffMs = Math.abs(new Date().getTime() - new Date(latest.completedDate || latest.scheduledDate).getTime());
+                  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                  if (diffDays >= 5) {
+                    alertsList.push(`Customer has not been contacted for ${diffDays} days.`);
+                  }
+                } else {
+                  alertsList.push("Customer has not been contacted yet.");
+                }
+                
+                const siteVisits = followups.filter(f => f.type === "Site Visit" && ["Scheduled", "Upcoming", "Due Today"].includes(f.status));
+                if (siteVisits.length === 0) {
+                  alertsList.push("Site visit not yet scheduled.");
+                }
+
+                const latestStageChange = details.stageHistory && details.stageHistory[0];
+                if (latestStageChange) {
+                  const diffMs = Math.abs(new Date().getTime() - new Date(latestStageChange.date).getTime());
+                  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                  if (diffDays >= 5) {
+                    alertsList.push(`Lead has stayed in ${basicLead.stage} stage for ${diffDays} days.`);
+                  }
+                }
+
+                return (
+                  <div className="space-y-6">
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-[#FAF8F5] border border-[#E8E2D6] p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                        <span className="text-[9px] text-gray-400 font-black uppercase tracking-wider">TOTAL FOLLOW-UPS</span>
+                        <span className="text-lg font-extrabold text-[#1A3C2A] mt-1">{totalFollowups}</span>
+                      </div>
+
+                      <div className="bg-[#FAF8F5] border border-[#E8E2D6] p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                        <span className="text-[9px] text-gray-400 font-black uppercase tracking-wider">PENDING TASKS</span>
+                        <span className="text-lg font-extrabold text-blue-705 mt-1">{pendingFollowups}</span>
+                      </div>
+
+                      <div className={cn(
+                        "border p-4 rounded-xl flex flex-col justify-between shadow-sm",
+                        overdueFollowups > 0 
+                          ? "bg-red-50 border-red-200 text-red-900" 
+                          : "bg-[#FAF8F5] border-[#E8E2D6]"
+                      )}>
+                        <span className="text-[9px] font-black uppercase tracking-wider opacity-60">OVERDUE TASKS</span>
+                        <span className={cn(
+                          "text-lg font-extrabold mt-1",
+                          overdueFollowups > 0 ? "text-red-700" : "text-[#1A3C2A]"
+                        )}>{overdueFollowups}</span>
+                      </div>
+
+                      <div className="bg-[#FAF8F5] border border-[#E8E2D6] p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                        <span className="text-[9px] text-gray-400 font-black uppercase tracking-wider">NEXT SCHEDULED</span>
+                        <span className="text-[10px] font-black text-amber-600 truncate mt-1">
+                          {nextScheduled ? nextScheduled.scheduledDate : "None Scheduled"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Section 2: Priority Card */}
+                    <div className="bg-white border border-[#E8E2D6] rounded-xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.01)]">
+                      <div className="flex items-center justify-between border-b pb-2 mb-4">
+                        <h4 className="text-[10px] font-black uppercase text-[#1a3c2a] tracking-wider flex items-center gap-1.5">
+                          <CheckCircle size={12} className="text-[#C9A82C]" />
+                          <span>UPCOMING SCHEDULED ACTION</span>
+                        </h4>
+                        {nextScheduled && (
+                          <span className={cn(
+                            "px-2 py-0.5 rounded text-[8px] font-black uppercase border tracking-wider",
+                            nextScheduled.priority === "Critical" || nextScheduled.priority === "High"
+                              ? "bg-red-50 text-red-700 border-red-200"
+                              : "bg-blue-50 text-blue-700 border-blue-200"
+                          )}>
+                            {nextScheduled.priority} PRIORITY
+                          </span>
+                        )}
+                      </div>
+
+                      {nextScheduled ? (
+                        <div className="space-y-4 text-xs font-semibold text-gray-700">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div>
+                              <span className="text-[8.5px] uppercase text-gray-400 font-black block">Date & Time</span>
+                              <span className="text-[#1A3C2A] font-extrabold">{nextScheduled.scheduledDate}</span>
+                            </div>
+                            <div>
+                              <span className="text-[8.5px] uppercase text-gray-400 font-black block">Action Type</span>
+                              <span className="text-emerald-700 font-extrabold flex items-center gap-1 mt-0.5">
+                                {nextScheduled.type === "Call" ? "📞 Call" :
+                                 nextScheduled.type === "WhatsApp" ? "💬 WhatsApp" :
+                                 nextScheduled.type === "Site Visit" ? "🏗️ Site Visit" :
+                                 nextScheduled.type === "Meeting" ? "🤝 Meeting" : "✉️ Email"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[8.5px] uppercase text-gray-400 font-black block">Assigned Advisor</span>
+                              <span className="text-[#1A3C2A] font-extrabold">{nextScheduled.conductedBy || basicLead.rm}</span>
+                            </div>
+                            <div>
+                              <span className="text-[8.5px] uppercase text-gray-400 font-black block">Reminder Status</span>
+                              <span className="text-[#B5982C] font-extrabold flex items-center gap-1">
+                                <Clock size={10} />
+                                <span>{nextScheduled.reminderTime ? `Remind ${nextScheduled.reminderTime}` : "No Reminder Set"}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          {nextScheduled.purpose && (
+                            <div className="bg-[#FAF8F5] p-3 rounded-lg border border-gray-150">
+                              <span className="text-[8px] uppercase text-gray-400 font-black block mb-1">TASK OBJECTIVE / NOTES</span>
+                              <p className="text-[11px] text-gray-650 leading-relaxed font-bold">
+                                {nextScheduled.purpose} {nextScheduled.notes && `— ${nextScheduled.notes}`}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* CTAs */}
+                          <div className="flex gap-2 pt-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedFollowupId(nextScheduled.id);
+                                setIsCompleteOpen(true);
+                              }}
+                              className="px-3.5 py-1.8 bg-[#133C27] hover:bg-[#0d2e1d] text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-all shadow-sm cursor-pointer"
+                            >
+                              Mark Completed
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedFollowupId(nextScheduled.id);
+                                setIsRescheduleOpen(true);
+                              }}
+                              className="px-3.5 py-1.8 border border-[#E8E2D6] bg-white hover:bg-gray-55 text-gray-700 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all shadow-sm cursor-pointer"
+                            >
+                              Reschedule
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 space-y-3">
+                          <p className="text-xs text-gray-450 italic font-bold">No follow-up action currently scheduled for this lead profile.</p>
+                          <button
+                            type="button"
+                            onClick={() => setIsScheduleOpen(true)}
+                            className="px-4 py-2 bg-[#0D2E1D] hover:bg-[#184B31] text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
+                          >
+                            + Schedule Follow-up
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Section 4: Attention Required Alerts */}
+                    {alertsList.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="text-[10px] font-black uppercase text-red-800 tracking-wider flex items-center gap-1.5">
+                          <AlertCircle size={12} className="text-red-700" />
+                          <span>ATTENTION REQUIRED ALERTS</span>
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {alertsList.map((alertText, idx) => (
+                            <div key={idx} className="bg-red-50 border border-red-200 text-red-900 rounded-xl p-3.5 flex items-start gap-2 text-xs font-bold">
+                              <AlertCircle size={14} className="text-red-700 shrink-0 mt-0.5" />
+                              <span className="font-extrabold leading-normal text-red-800">{alertText}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Section 3: Follow-up Timeline */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <h4 className="text-[10px] font-black uppercase text-[#1a3c2a] tracking-wider">CHRONOLOGICAL FOLLOW-UP TIMELINE</h4>
+                        <span className="text-[9px] text-gray-400 font-bold">{followups.length} Total Logs</span>
+                      </div>
+
+                      {followups.length === 0 ? (
+                        <p className="text-xs text-gray-400 italic py-4">No follow-ups recorded yet.</p>
+                      ) : (
+                        <div className="relative border-l border-gray-150 pl-6 ml-3 space-y-6 text-xs">
+                          {[...followups]
+                            .sort((a, b) => new Date(b.scheduledDate).getTime() - new Date(a.scheduledDate).getTime())
+                            .map((f) => {
+                              const isDone = f.status === "Completed";
+                              const isMissed = f.status === "Overdue";
+                              const isCancelled = f.status === "Cancelled";
+                              
+                              return (
+                                <div key={f.id} className="relative min-h-[50px] flex flex-col justify-center bg-white border border-[#E8E2D6] rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                                  {/* Bullet Status Icon */}
+                                  <div className={cn(
+                                    "absolute -left-[37px] top-4 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center shadow-sm text-[9px] font-black",
+                                    isDone ? "bg-emerald-500 text-white" :
+                                    isMissed ? "bg-red-500 text-white" :
+                                    isCancelled ? "bg-gray-400 text-white" : "bg-blue-500 text-white"
+                                  )}>
+                                    {f.type === "Call" ? "📞" :
+                                     f.type === "WhatsApp" ? "💬" :
+                                     f.type === "Site Visit" ? "🏗️" :
+                                     f.type === "Meeting" ? "🤝" : "✉️"}
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b pb-1.5 border-gray-100">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="font-extrabold text-[#1A3C2A] text-[10.5px]">
+                                          {f.type} {isDone ? "Completed" : "Scheduled"}
+                                        </span>
+                                        <span className={cn(
+                                          "px-1.5 py-0.2 rounded text-[7px] font-black uppercase tracking-tight",
+                                          isDone ? "bg-[#E8F5EC] text-emerald-800 border border-emerald-250" :
+                                          isMissed ? "bg-red-50 text-red-800 border border-red-200" :
+                                          isCancelled ? "bg-gray-100 text-gray-700 border border-gray-200" :
+                                          "bg-blue-50 text-blue-800 border border-blue-200"
+                                        )}>
+                                          {f.status}
+                                        </span>
+                                      </div>
+                                      <span className="text-gray-400 font-medium text-[9px]">{f.scheduledDate}</span>
+                                    </div>
+
+                                    <div className="space-y-1.5 text-xs text-gray-700 font-bold">
+                                      {isDone && f.outcome && (
+                                        <div>
+                                          <span className="text-[8.5px] uppercase text-gray-400 font-black block">Outcome Summary</span>
+                                          <p className="text-gray-655 leading-relaxed font-bold mt-0.5">{f.outcome}</p>
+                                        </div>
+                                      )}
+
+                                      {f.purpose && (
+                                        <div>
+                                          <span className="text-[8.5px] uppercase text-gray-400 font-black block">Purpose / Objective</span>
+                                          <p className="text-gray-600 font-medium leading-relaxed mt-0.5">{f.purpose}</p>
+                                        </div>
+                                      )}
+
+                                      {isDone && f.nextRecommendedAction && (
+                                        <div className="pt-1.5 border-t border-dashed border-gray-100 flex items-center justify-between gap-2">
+                                          <div>
+                                            <span className="text-[8.5px] uppercase text-[#C9A82C] font-black block">Next Action Criteria</span>
+                                            <span className="text-[10px] text-[#133C27] font-extrabold">{f.nextRecommendedAction}</span>
+                                          </div>
+                                          <div>
+                                            <span className="text-[8.5px] uppercase text-gray-400 font-black block text-right font-bold">Conducted By</span>
+                                            <span className="text-[9.5px] text-gray-700 block text-right font-black">{f.completedBy || f.conductedBy}</span>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {!isDone && (
+                                        <div className="flex justify-between items-center pt-1.5 border-t border-dashed border-gray-100 text-[9px] text-gray-400 font-bold">
+                                          <span>Priority: {f.priority}</span>
+                                          <span>Assigned To: {f.conductedBy}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Section 5: Super Admin Actions */}
+                    <div className="bg-[#FAF8F5] border border-[#E8E2D6] rounded-xl p-5 space-y-4">
+                      <h4 className="text-[10px] font-black uppercase text-[#1a3c2a] tracking-wider flex items-center gap-1.5 border-b pb-2">
+                        <Shield size={12} className="text-[#C9A82C]" />
+                        <span>SUPER ADMIN OPERATIONS</span>
+                      </h4>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsScheduleOpen(true)}
+                          className="py-2 px-3 bg-[#133C27] hover:bg-[#0d2e1d] text-white text-[9px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Calendar size={12} />
+                          <span>Schedule Follow-up</span>
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={() => setIsReassignOpen(true)}
+                          className="py-2 px-3 bg-white border border-[#E8E2D6] hover:bg-gray-55 text-gray-700 text-[9px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <UserCheck size={12} className="text-[#C9A82C]" />
+                          <span>Reassign RM</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsStageOpen(true)}
+                          className="py-2 px-3 bg-white border border-[#E8E2D6] hover:bg-gray-55 text-gray-700 text-[9px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <History size={12} className="text-[#133C27]" />
+                          <span>Change Stage</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("conversations")}
+                          className="py-2 px-3 bg-white border border-[#E8E2D6] hover:bg-gray-55 text-gray-700 text-[9px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <MessageSquare size={12} className="text-purple-600" />
+                          <span>Add Internal Note</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => alert("Exporting lead profile sheet as Excel report...")}
+                          className="py-2 px-3 bg-white border border-[#E8E2D6] hover:bg-gray-55 text-gray-700 text-[9px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Upload size={12} className="rotate-180 text-gray-400" />
+                          <span>Export Profile Sheet</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Negotiation hub & Action Forms */}
               {activeTab === "negotiation" && (
@@ -1247,6 +1671,24 @@ export default function LeadDetailPage() {
                 <UserCheck size={12} className="text-[#C9A82C]" />
                 <span>Transfer Ownership RM</span>
               </button>
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-dashed border-gray-150">
+                <a
+                  href="tel:+919940212345"
+                  className="py-2 border border-gray-200 hover:bg-gray-50 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-600 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <Phone size={11} className="text-emerald-600" />
+                  <span>Call RM</span>
+                </a>
+                
+                <button
+                  onClick={() => setActiveTab("conversations")}
+                  className="py-2 border border-gray-200 hover:bg-gray-50 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-600 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <MessageSquare size={11} className="text-blue-600" />
+                  <span>Chat RM</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="bg-white border border-[#E8E2D6] rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.01)] space-y-3 text-center">
