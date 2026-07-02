@@ -7,7 +7,7 @@ import {
   Menu,
   ChevronRight
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,8 +20,13 @@ const items = [
 ];
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const isLeadDetail = pathname.includes("/dashboard/leads/") && pathname.split("/").filter(Boolean).length >= 3;
+  const [collapsed, setCollapsed] = useState(isLeadDetail);
+
+  useEffect(() => {
+    setCollapsed(isLeadDetail);
+  }, [pathname, isLeadDetail]);
 
   return (
     <motion.aside

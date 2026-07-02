@@ -19,165 +19,8 @@ import LeadFilterBar from "@/components/leads/LeadFilterBar";
 import BulkToolbar from "@/components/leads/BulkToolbar";
 import LeadTable from "@/components/leads/LeadTable";
 import TransferRMModal from "@/components/leads/TransferRMModal";
+import { getStoredLeads, saveStoredLeads, Lead, initialMockLeads } from "@/lib/leadsStore";
 
-// Define TypeScript interfaces for our Lead model
-interface Lead {
-  id: string;
-  name: string;
-  mobile: string;
-  secondaryMobile?: string;
-  email: string;
-  source: string;
-  budget: number; // In INR (e.g. 7500000 for 75L)
-  project: string;
-  rm: string; // "Arun Kumar" | "Meera Nair" | "Divya Sharma" | "Suresh Pillai" | "Unassigned"
-  score: number; // 1 to 100
-  stage: "New" | "Contacted" | "Qualified" | "Site Visit" | "Negotiation" | "Booked" | "Lost";
-  lastActivityTime: string; // e.g. "2 mins ago"
-  lastActivityDesc: string; // e.g. "Lead created"
-  nextFollowupText: string; // e.g. "Today, 3:00 PM"
-  createdDate: string; // ISO date string
-  preferredLocation?: string;
-  remarks?: string;
-  avatar?: string;
-}
-
-// Initial mockup database matching the user's screenshot mockup EXACTLY
-const initialMockLeads: Lead[] = [
-  {
-    id: "LD-2415",
-    name: "Ravi Kumar",
-    mobile: "+91 98765 43210",
-    secondaryMobile: "",
-    email: "ravi.kumar@gmail.com",
-    source: "Website",
-    budget: 7500000,
-    project: "Vasiyam Enclave",
-    rm: "Arun Kumar",
-    score: 85,
-    stage: "New",
-    lastActivityTime: "2 mins ago",
-    lastActivityDesc: "Lead created",
-    nextFollowupText: "Today, 3:00 PM",
-    createdDate: "2026-06-25",
-    preferredLocation: "Thoraipakkam",
-    remarks: "Very interested in 3BHK east-facing apartment. Clean prospect."
-  },
-  {
-    id: "LD-2414",
-    name: "Priya Sharma",
-    mobile: "+91 87654 32109",
-    secondaryMobile: "",
-    email: "priya.sharma@gmail.com",
-    source: "Facebook Ads",
-    budget: 6500000,
-    project: "Vasiyam Grandeur",
-    rm: "Meera Nair",
-    score: 72,
-    stage: "Contacted",
-    lastActivityTime: "15 mins ago",
-    lastActivityDesc: "Called",
-    nextFollowupText: "Tomorrow, 11:00 AM",
-    createdDate: "2026-06-25",
-    preferredLocation: "Medavakkam",
-    remarks: "Responded to Meta advertisement. Shared project details over WhatsApp."
-  },
-  {
-    id: "LD-2413",
-    name: "Suresh Babu",
-    mobile: "+91 91234 56789",
-    secondaryMobile: "",
-    email: "suresh.babu@gmail.com",
-    source: "WhatsApp",
-    budget: 8500000,
-    project: "Vasiyam Meadows",
-    rm: "Divya Sharma",
-    score: 64,
-    stage: "Qualified",
-    lastActivityTime: "1 hour ago",
-    lastActivityDesc: "Details shared",
-    nextFollowupText: "28 Jun, 4:00 PM",
-    createdDate: "2026-06-25",
-    preferredLocation: "Velachery",
-    remarks: "Financing approved. Seeking 3BHK flats with wood work options."
-  },
-  {
-    id: "LD-2412",
-    name: "Anitha Rajan",
-    mobile: "+91 99876 54321",
-    secondaryMobile: "",
-    email: "anitha.rajan@gmail.com",
-    source: "Referral",
-    budget: 12000000,
-    project: "Vasiyam Enclave",
-    rm: "Suresh Pillai",
-    score: 55,
-    stage: "Site Visit",
-    lastActivityTime: "3 hours ago",
-    lastActivityDesc: "Site visit scheduled",
-    nextFollowupText: "28 Jun, 11:00 AM",
-    createdDate: "2026-06-24",
-    preferredLocation: "Adyar",
-    remarks: "Wants premium duplex flats. Referral from existing customer."
-  },
-  {
-    id: "LD-2411",
-    name: "Vikram M",
-    mobile: "+91 93456 78901",
-    secondaryMobile: "",
-    email: "vikram.m@gmail.com",
-    source: "Walk-in",
-    budget: 5000000,
-    project: "Vasiyam Grandeur",
-    rm: "Arun Kumar",
-    score: 48,
-    stage: "Negotiation",
-    lastActivityTime: "1 day ago",
-    lastActivityDesc: "Price discussion",
-    nextFollowupText: "29 Jun, 3:30 PM",
-    createdDate: "2026-06-24",
-    preferredLocation: "OMR Sholinganallur",
-    remarks: "Demanding discount on registrar charges. Discussing final rates."
-  },
-  {
-    id: "LD-2410",
-    name: "Deepa Nair",
-    mobile: "+91 90321 45678",
-    secondaryMobile: "",
-    email: "deepa.nair@gmail.com",
-    source: "99acres",
-    budget: 7000000,
-    project: "The Residency",
-    rm: "Meera Nair",
-    score: 42,
-    stage: "New",
-    lastActivityTime: "1 day ago",
-    lastActivityDesc: "Lead created",
-    nextFollowupText: "30 Jun, 10:00 AM",
-    createdDate: "2026-06-24",
-    preferredLocation: "Adyar",
-    remarks: "Enquiry through 99acres portal for 3BHK flat."
-  },
-  {
-    id: "LD-2409",
-    name: "Aravind K",
-    mobile: "+91 88990 12345",
-    secondaryMobile: "",
-    email: "aravind.k@gmail.com",
-    source: "Google Ads",
-    budget: 16000000,
-    project: "Sky Heights",
-    rm: "Divya Sharma",
-    score: 36,
-    stage: "Contacted",
-    lastActivityTime: "2 days ago",
-    lastActivityDesc: "Called",
-    nextFollowupText: "30 Jun, 2:00 PM",
-    createdDate: "2026-06-23",
-    preferredLocation: "Velachery",
-    remarks: "High budget lead. Seeking premium top floor penthouse."
-  }
-];
 
 // Master reference arrays for dropdowns and select lists
 const relationshipManagers = ["Arun Kumar", "Meera Nair", "Divya Sharma", "Suresh Pillai", "Unassigned"];
@@ -186,7 +29,11 @@ const projectsList = ["Vasiyam Enclave", "Vasiyam Grandeur", "Vasiyam Meadows", 
 const leadStages = ["New", "Contacted", "Qualified", "Site Visit", "Negotiation", "Booked", "Lost"];
 
 export default function LeadsPage() {
-  const [leads, setLeads] = useState<Lead[]>(initialMockLeads);
+  const [leads, setLeads] = useState<Lead[]>(() => getStoredLeads(initialMockLeads));
+
+  useEffect(() => {
+    saveStoredLeads(leads);
+  }, [leads]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);

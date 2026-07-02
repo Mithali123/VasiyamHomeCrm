@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import {
   FolderOpen,
   Calendar,
@@ -296,6 +297,7 @@ export default function LeadTable({
   setRowsPerPage,
   setRowActionsOpenId
 }: LeadTableProps) {
+  const router = useRouter();
   return (
     <div className="bg-white dark:bg-[#0D2E1D] border border-[#E8E2D6] dark:border-white/10 rounded-2xl shadow-sm overflow-hidden relative">
       <div className="overflow-x-auto">
@@ -394,7 +396,7 @@ export default function LeadTable({
                       <div className="flex items-center gap-1.5 text-left whitespace-nowrap">
                         <span 
                           className="font-extrabold text-primary dark:text-[#C59A2C] leading-tight hover:underline cursor-pointer"
-                          onClick={() => handleOpenEdit(lead)}
+                          onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
                         >
                           {lead.name}
                         </span>
@@ -405,7 +407,7 @@ export default function LeadTable({
                     </td>
 
                     {/* Contact (Phone + Email underneath) */}
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 cursor-pointer" onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       <div className="flex flex-col text-left leading-tight">
                         <span className="font-extrabold text-gray-700 dark:text-gray-350">
                           {lead.mobile}
@@ -417,12 +419,12 @@ export default function LeadTable({
                     </td>
 
                     {/* Source badge with colored brand icon and tooltip */}
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 cursor-pointer" onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       <div className="flex justify-start">
                         <div
                           title={lead.source}
                           className={cn(
-                            "w-8 h-8 rounded-xl border flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-all hover:scale-105 cursor-pointer",
+                            "w-8 h-8 rounded-xl border flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.02)] transition-all hover:scale-105",
                             getSourceBadgeStyles(lead.source).bg,
                             getSourceBadgeStyles(lead.source).color
                           )}
@@ -433,12 +435,12 @@ export default function LeadTable({
                     </td>
 
                     {/* Project */}
-                    <td className="py-3 px-3 font-bold text-gray-700 dark:text-gray-350">
+                    <td className="py-3 px-3 font-bold text-gray-700 dark:text-gray-350 cursor-pointer" onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       {lead.project}
                     </td>
 
                     {/* Lead Stage Badge */}
-                    <td className="py-3 px-3 whitespace-nowrap text-center">
+                    <td className="py-3 px-3 whitespace-nowrap text-center cursor-pointer" onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       <span
                         className={cn(
                           "px-2.5 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-tight inline-block",
@@ -450,7 +452,7 @@ export default function LeadTable({
                     </td>
 
                     {/* RM Name */}
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 cursor-pointer" onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       <span
                         className={cn(
                           "font-bold text-[11px]",
@@ -464,7 +466,7 @@ export default function LeadTable({
                     </td>
 
                     {/* Last Activity (Time + action subtext) */}
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 cursor-pointer" onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       <div className="flex flex-col text-left leading-tight">
                         <span className="font-extrabold text-gray-700 dark:text-gray-350">
                           {lead.lastActivityTime}
@@ -476,7 +478,7 @@ export default function LeadTable({
                     </td>
 
                     {/* Score circle outline ring (Exactly replicates mockup) */}
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-3 px-3 text-center cursor-pointer" onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       <div className={cn(
                         "w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-black mx-auto",
                         getScoreCircleColor(lead.score)
@@ -486,7 +488,7 @@ export default function LeadTable({
                     </td>
 
                     {/* Next Follow-up (Calendar icon + Date/Time) */}
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 cursor-pointer" onClick={() => router.push(`/dashboard/leads/${lead.id}`)}>
                       <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-350">
                         <Calendar size={13} className="text-gray-400 shrink-0" />
                         <span className="font-bold text-[11px]">{lead.nextFollowupText}</span>
@@ -554,7 +556,7 @@ export default function LeadTable({
                                 className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-gray-700 dark:text-gray-205 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors font-bold cursor-pointer"
                               >
                                 <UserCheck size={13} className="text-[#C59A2C]" />
-                                <span>Assign Manager</span>
+                                <span>Assign Relationship Manager</span>
                               </button>
                               
                               <hr className="border-gray-100 dark:border-white/5" />

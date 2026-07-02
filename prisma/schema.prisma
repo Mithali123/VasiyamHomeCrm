@@ -1,13 +1,134 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// Allowed Roles in the system
+enum Role {
+  ADMIN
+  ASSIGNER
+  RM
+}
+
+// 1. TENANT (Organization level isolation)
+model Tenant {
+  id         String     @id @default(uuid())
+  name       String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  users      User[]
+  properties Property[]
+  stages     Stage[]
+  leads      Lead[]
+  activities Activity[]
+}
+
+// 2. USER (Relationship Managers & Admins)
+model User {
+  id        String     @id @default(uuid())
+  name      String     // e.g., "Arun Kumar"
+  email     String     @unique
+  role      Role       @default(RM)
+  tenantId  String
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leads     Lead[]     // Leads assigned to this RM
+  notes     LeadNote[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// 3. PROPERTY (Projects)
+model Property {
+  id        String   @id @default(uuid())
+  name      String   // e.g., "Vasiyam Pride"
+  type      String   // e.g., "Apartments", "Independent Plots"
+  status    String   // e.g., "Ongoing", "Completed"
+  location  String   // e.g., "Medavakkam, Chennai"
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leads     Lead[]
+  visits    Visit[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 4. STAGE (Pipeline Stages)
+model Stage {
+  id        String   @id @default(uuid())
+  name      String   // e.g., "New", "Contacted", "Qualified"
+  color     String   @default("#064734") // Hex code for custom badge color
+  order     Int      // To sort stages: 1 = New, 2 = Contacted, 3 = Qualified, etc.
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  leads     Lead[]
+}
+
+// 5. LEAD (Core Prospect)
+model Lead {
+  id                String     @id @default(uuid())
+  customLeadId      String     // e.g., "LD-2415" (friendly UI display ID)
+  name              String
+  mobile            String
+  secondaryMobile   String?
+  email             String?
+  source            String     // e.g., "Website", "Instagram"
+  budget            BigInt     // Storing in INR (e.g., 7500000)
+  score             Int        @default(50) // Lead score (1-100)
+  preferredLocation String?
+  remarks           String?
+  avatar            String?
+  
+  // Relations
+  tenantId          String
+  tenant            Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stageId           String
+  stage             Stage      @relation(fields: [stageId], references: [id])
+  propertyId        String?
+  property          Property?  @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  rmId              String?
+  rm                User?      @relation(fields: [rmId], references: [id], onDelete: SetNull)
+  
+  notes             LeadNote[]
+  visits            Visit[]
+  
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+}
+
+// 6. LEAD NOTE (Lead Remarks / Activities timeline)
+model LeadNote {
+  id         String   @id @default(uuid())
+  content    String   // The remark content
+  leadId     String
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdById String
+  createdBy  User     @relation(fields: [createdById], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+// 7. VISIT (Site Visits)
+model Visit {
+  id         String   @id @default(uuid())
+  visitDate  DateTime
+  status     String   @default("Scheduled") // "Scheduled" | "Completed" | "Cancelled"
+  leadId     String
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+// 8. ACTIVITY (Global Recent Activities on Dashboard)
+model Activity {
+  id        String   @id @default(uuid())
+  type      String   // e.g., "New lead", "Site visit completed", "Booking confirmed"
+  detail    String   // e.g., "Rohit Kumar from Website has been created"
+  badge     String   // e.g., "New", "Site Visit", "Booking"
+  tone      String   @default("green") // "green" | "blue" | "gold" | "red" etc.
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
