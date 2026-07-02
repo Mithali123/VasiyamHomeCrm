@@ -404,6 +404,11 @@ export default function LeadDetailPage() {
                         basicLead.id === "LD-2414" ? "2 of 8" :
                         basicLead.id === "LD-2413" ? "6 of 10" : "Not Specified";
 
+  const scoreProgressRadius = 42;
+  const scoreProgressCircumference = 2 * Math.PI * scoreProgressRadius;
+  const scoreProgressStrokeOffset = scoreProgressCircumference - (basicLead.score / 100) * scoreProgressCircumference;
+  const scoreColor = basicLead.score >= 80 ? "#10B981" : basicLead.score >= 60 ? "#F59E0B" : "#EF4444";
+
   return (
     <div className="space-y-6 pb-12 select-none">
       {/* breadcrumbs header */}
@@ -430,24 +435,55 @@ export default function LeadDetailPage() {
           <div className="bg-[#FAF8F5] border border-[#E8E2D6] rounded-3xl p-6 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-primary to-[#C9A82C]" />
             
-            {/* Avatar Circle with initials */}
-            <div className="relative mt-2">
-              <div className="w-24 h-24 rounded-full bg-[#0D2E1D] flex items-center justify-center text-xl font-bold text-[#C9A82C] shadow-sm">
+            {/* Avatar Circle with score progress ring around it */}
+            <div className="relative mt-2 w-24 h-24 flex items-center justify-center">
+              {/* SVG Score Ring */}
+              <svg className="absolute inset-0 w-24 h-24 transform -rotate-90">
+                {/* Background track */}
+                <circle
+                  cx="48"
+                  cy="48"
+                  r={scoreProgressRadius}
+                  stroke="#E8E2D6"
+                  strokeWidth="3"
+                  fill="transparent"
+                />
+                {/* Active progress */}
+                <circle
+                  cx="48"
+                  cy="48"
+                  r={scoreProgressRadius}
+                  stroke={scoreColor}
+                  strokeWidth="4"
+                  strokeDasharray={scoreProgressCircumference}
+                  strokeDashoffset={scoreProgressStrokeOffset}
+                  strokeLinecap="round"
+                  fill="transparent"
+                  className="transition-all duration-1000 ease-out"
+                />
+              </svg>
+              
+              {/* Inner Avatar */}
+              <div className="relative w-[76px] h-[76px] rounded-full bg-[#0D2E1D] flex items-center justify-center text-lg font-bold text-[#C9A82C] shadow-inner select-none">
                 {basicLead.name.split(" ").map(n => n[0]).join("")}
               </div>
-              {/* Overlaid Score Badge */}
+              
+              {/* Numerical Score overlay badge at bottom right */}
               <div className={cn(
-                "absolute -bottom-1 -right-1 w-8 h-8 rounded-full border-2 border-[#FAF8F5] flex items-center justify-center text-xs font-black shadow-md",
+                "absolute -bottom-1 -right-1 w-7 h-7 rounded-full border-2 border-[#FAF8F5] flex items-center justify-center text-[10px] font-black shadow-md",
                 getScoreCircleColor(basicLead.score)
               )}>
                 {basicLead.score}
               </div>
             </div>
 
-            {/* Centered Status Badge */}
-            <div className="mt-4">
+            {/* Centered Status & Source Badge */}
+            <div className="mt-4 flex items-center justify-center gap-1.5">
               <span className="px-3 py-1 bg-[#FAF3E3] text-[#B5982C] border border-[#EBE3D0] rounded-full text-[9px] font-black uppercase tracking-wider">
                 • {basicLead.stage}
+              </span>
+              <span className="px-3 py-1 bg-white border border-[#E8E2D6] text-gray-500 rounded-full text-[9px] font-black uppercase tracking-wider">
+                {basicLead.source}
               </span>
             </div>
 
@@ -503,18 +539,20 @@ export default function LeadDetailPage() {
 
             {/* Actions Buttons */}
             <div className="w-full mt-6 space-y-2.5">
-              <button
-                onClick={() => setIsReassignOpen(true)}
-                className="w-full py-3 bg-[#0D2E1D] hover:bg-[#184B31] text-white text-xs font-black rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <UserCheck size={14} />
-                <span>Assign relationship manager</span>
-              </button>
+              {(!basicLead.rm || basicLead.rm === "Unassigned") && (
+                <button
+                  onClick={() => setIsReassignOpen(true)}
+                  className="w-full py-3 bg-[#0D2E1D] hover:bg-[#184B31] text-white text-xs font-black rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <UserCheck size={14} />
+                  <span>Assign relationship manager</span>
+                </button>
+              )}
               
               <div className="grid grid-cols-2 gap-2.5">
                 <button
                   onClick={() => alert(`Exporting lead profile sheet as Excel report...`)}
-                  className="py-2.5 border border-[#E8E2D6] bg-white hover:bg-gray-50 text-gray-700 text-[10px] font-black rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="py-2.5 border border-[#E8E2D6] bg-white hover:bg-gray-55 text-gray-700 text-[10px] font-black rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Upload size={12} className="rotate-180 text-gray-400" />
                   <span>Export</span>
@@ -543,6 +581,15 @@ export default function LeadDetailPage() {
               )}>
                 {basicLead.score >= 70 ? "HOT INTEREST" : "WARM PROSPECT"}
               </span>
+            </div>
+
+            {/* Property Rendering Image */}
+            <div className="relative w-full h-32 rounded-xl overflow-hidden border border-gray-150 shadow-inner bg-gray-50">
+              <img
+                src="/property_preview.png"
+                alt="Property Preference rendering preview Vasiyam Homes"
+                className="w-full h-full object-cover"
+              />
             </div>
 
             <div className="space-y-3.5">
@@ -669,55 +716,9 @@ export default function LeadDetailPage() {
             {/* Tab content area */}
             <div className="p-5 flex-1 overflow-y-auto">
               
-              {/* Timeline feed & Log inline note */}
+              {/* Timeline feed */}
               {activeTab === "timeline" && (
                 <div className="space-y-6">
-                  
-                  {/* Inline Add Note form */}
-                  <form onSubmit={submitComment} className="bg-[#FBF9F4]/40 border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase text-primary tracking-wider">Log Communication / Note</span>
-                      <div className="flex items-center gap-1 bg-white border border-[#E8E2D6] rounded p-0.5">
-                        <select
-                          value={commentType}
-                          onChange={(e) => setCommentType(e.target.value as any)}
-                          className="text-[9.5px] font-black p-0.5 bg-transparent border-none focus:outline-none cursor-pointer uppercase text-gray-550"
-                        >
-                          <option value="RM Note">RM Note</option>
-                          <option value="Internal">Internal Note</option>
-                          <option value="Manager Note">Manager Note</option>
-                          <option value="Conversation Summary">Summary</option>
-                        </select>
-                      </div>
-                    </div>
-                    
-                    <textarea
-                      value={commentContent}
-                      onChange={(e) => setCommentContent(e.target.value)}
-                      placeholder="Type details of client interaction or private notes here..."
-                      className="w-full text-xs font-medium p-2 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none focus:ring-1 focus:ring-primary min-h-[56px] resize-none"
-                      required
-                    />
-
-                    <div className="flex justify-between items-center text-[10px]">
-                      <div className="flex items-center gap-1 font-bold text-gray-400">
-                        <span>Agent:</span>
-                        <input
-                          type="text"
-                          value={commentAuthor}
-                          onChange={(e) => setCommentAuthor(e.target.value)}
-                          className="bg-transparent border-b w-24 font-bold text-gray-655 focus:outline-none py-0.5"
-                          required
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="px-3.5 py-1.5 bg-[#133C27] hover:bg-[#0d2e1d] text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
-                      >
-                        Log Note
-                      </button>
-                    </div>
-                  </form>
 
                   <div className="flex items-center justify-between border-b pb-2 border-gray-100">
                     <h4 className="text-[10px] font-black uppercase text-[#1a3c2a] tracking-wider">Activity Feed Trail</h4>
@@ -1211,6 +1212,60 @@ export default function LeadDetailPage() {
               )}
             </div>
           </div>
+
+          {/* RM Details Card */}
+          {basicLead.rm && basicLead.rm !== "Unassigned" ? (
+            <div className="bg-white border border-[#E8E2D6] rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.01)] space-y-4">
+              <h4 className="text-[10px] font-black uppercase text-[#1a3c2a] tracking-wider border-b pb-2 flex items-center gap-1.5">
+                <User size={12} className="text-[#C9A82C]" />
+                <span>RELATIONSHIP MANAGER</span>
+              </h4>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-50 border border-[#E8E2D6] flex items-center justify-center text-sm font-extrabold text-[#B5982C]">
+                  {basicLead.rm.split(" ").map(n => n[0]).join("")}
+                </div>
+                <div className="space-y-0.5">
+                  <p className="font-extrabold text-sm text-[#1A3C2A]">{basicLead.rm}</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase">Portfolio Advisor</p>
+                </div>
+              </div>
+              <div className="space-y-2 text-xs pt-2 border-t border-gray-100 text-gray-650">
+                <div className="flex items-center gap-2">
+                  <Phone size={12} className="text-gray-455" />
+                  <span className="font-bold">+91 99402 12345</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail size={12} className="text-gray-455" />
+                  <span className="font-bold break-all">{basicLead.rm.toLowerCase().replace(" ", ".")}@vasiyam.com</span>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setIsReassignOpen(true)}
+                className="w-full py-2 border border-gray-200 hover:bg-gray-50 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-600 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm mt-2"
+              >
+                <UserCheck size={12} className="text-[#C9A82C]" />
+                <span>Transfer Ownership RM</span>
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white border border-[#E8E2D6] rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.01)] space-y-3 text-center">
+              <h4 className="text-[10px] font-black uppercase text-[#1a3c2a] tracking-wider border-b pb-2 text-left flex items-center gap-1.5">
+                <User size={12} className="text-gray-400" />
+                <span>RELATIONSHIP MANAGER</span>
+              </h4>
+              <p className="text-[10.5px] text-gray-450 font-bold leading-normal">
+                No Relationship Manager assigned to this lead profile yet.
+              </p>
+              <button
+                onClick={() => setIsReassignOpen(true)}
+                className="w-full py-2.5 bg-[#0D2E1D] hover:bg-[#184B31] text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <UserCheck size={12} />
+                <span>Assign advisor</span>
+              </button>
+            </div>
+          )}
         </div>
 
       </div>
