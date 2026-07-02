@@ -24,9 +24,9 @@ export const projects = [
 export const kpiData: KPIItem[] = [
   { label: "Total Leads", value: "4,128", change: "12.4%", detail: "vs last month", tone: "green" },
   { label: "New Leads", value: "312", change: "12.1%", detail: "vs last month", tone: "blue" },
-  { label: "Pipeline", value: "₹248.6M", change: "13.2%", detail: "vs last month", tone: "gold" },
-  { label: "Conversion Rate", value: "6.4%", change: "0.3%", detail: "vs last month", tone: "purple" },
-  { label: "Bookings (MTD)", value: "47", change: "5%", detail: "vs last month", tone: "teal" },
+  { label: "Pipeline", value: "₹48.80 Cr", change: "13.2%", detail: "vs last month", tone: "gold" },
+  { label: "Conversion Rate", value: "11.4%", change: "1.6%", detail: "vs industry benchmark 8.2%", tone: "purple" },
+  { label: "Bookings (MTD)", value: "47 | ₹5.56 Cr", change: "5%", detail: "vs last month", tone: "teal" },
   { label: "Follow-ups Due", value: "86", detail: "21 overdue  •  65 today", tone: "orange" },
 ];
 
