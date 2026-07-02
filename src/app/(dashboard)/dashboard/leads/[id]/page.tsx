@@ -177,7 +177,7 @@ export default function LeadDetailPage() {
   const [privateNoteAuthor, setPrivateNoteAuthor] = useState("Arun Kumar");
 
   const [chatMessageContent, setChatMessageContent] = useState("");
-  const [chatSenderRole, setChatSenderRole] = useState<"RM" | "Admin">("RM");
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
 
   const sortedActivities = useMemo(() => {
     if (!details || !details.activities) return [];
@@ -692,7 +692,6 @@ export default function LeadDetailPage() {
             <div className="flex border-b border-[#E8E2D6] overflow-x-auto bg-gray-50 text-xs font-bold text-gray-505 shrink-0 sticky top-0 z-10 scrollbar-none">
               {[
                 { id: "timeline", label: "Timeline Feed", icon: History },
-                { id: "conversations", label: "RM-Admin Chat", icon: MessageSquare },
                 { id: "followups", label: "Follow-up Log", icon: Calendar },
                 { id: "negotiation", label: "Negotiation Hub", icon: TrendingUp },
                 { id: "documents", label: "Document Vault", icon: FileText },
@@ -721,156 +720,119 @@ export default function LeadDetailPage() {
             <div className="p-5 flex-1 overflow-y-auto">
               
               {/* Timeline feed */}
-              {activeTab === "timeline" && (
-                <div className="space-y-6">
-
-                  <div className="flex items-center justify-between border-b pb-2 border-gray-100">
-                    <h4 className="text-[10px] font-black uppercase text-[#1a3c2a] tracking-wider">Activity Feed Trail</h4>
-                    <span className="text-[9px] text-gray-400 font-bold">{details.activities.length} Total Entries</span>
-                  </div>
-
-                  <div className="relative border-l border-gray-150 pl-6 ml-3 space-y-6 text-xs">
-                    {sortedActivities.map((act) => {
-                      const styleConfig = getActivityIcon(act.type);
-                      const ActIcon = styleConfig.icon;
-                      return (
-                        <div key={act.id} className="relative min-h-[40px] flex flex-col justify-center">
-                          <div className={cn(
-                            "absolute -left-[35px] top-0.5 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center shadow-sm",
-                            styleConfig.bg
-                          )}>
-                            <ActIcon size={10} />
-                          </div>
-
-                          <div className="space-y-1 pl-1">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                              <span className="font-extrabold text-[#1A3C2A] uppercase text-[8px] tracking-wider bg-gray-100 border border-gray-150 px-1.5 py-0.2 rounded w-fit">
-                                {act.type}
-                              </span>
-                              <span className="text-gray-400 font-medium text-[9px]">{act.date}</span>
-                            </div>
-                            <p className="text-gray-700 font-bold text-[10.5px] mt-0.5">{act.description}</p>
-                            <div className="text-[9px] text-gray-404 font-semibold flex flex-wrap items-center gap-1.5 mt-0.5">
-                              <span>Actor:</span>
-                              <span className="text-gray-650 font-black">{act.performedBy}</span>
-                              {act.role && (
-                                <span className="text-[8px] bg-amber-50 text-amber-800 px-1 py-0.2 border border-amber-200 rounded font-black uppercase">
-                                  {act.role}
-                                </span>
-                              )}
-                              {act.relatedStage && (
-                                <span className="text-[8px] bg-[#E8F5EC] text-emerald-800 px-1 py-0.2 border border-emerald-250 rounded font-black uppercase">
-                                  Stage: {act.relatedStage}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* RM-Admin Chat Discussion Section */}
-              {activeTab === "conversations" && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between border-b pb-2 border-[#E8E2D6]">
-                    <h4 className="text-[10px] font-black uppercase text-[#1A3C2A] tracking-wider flex items-center gap-1.5">
-                      <MessageSquare size={12} className="text-[#C9A82C]" />
-                      <span>RM & Admin Discussion Hub</span>
-                    </h4>
-                    <span className="text-[9px] text-gray-400 font-bold">
-                      {details.comments.length} Total Messages
-                    </span>
-                  </div>
-
-                  {/* Message Thread List */}
-                  {details.comments.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400 italic text-xs">
-                      No internal messages logged yet. Start the conversation below.
+              {activeTab === "timeline" && (() => {
+                const getActivityComments = (act: any) => {
+                  const matched = (details?.comments || []).filter(c => {
+                    if (act.id === "A-3" && c.id === "C-1") return true;
+                    return false;
+                  });
+                  if (matched.length > 0) return matched;
+                  if (act.id === "A-1") {
+                    return [{
+                      id: "fallback-A1",
+                      author: "System Integration",
+                      date: act.date,
+                      content: "Lead verified and captured successfully from website campaign landing page. Vasiyam Enclave 3BHK interest match identified."
+                    }];
+                  }
+                  if (act.id === "A-2") {
+                    return [{
+                      id: "fallback-A2",
+                      author: "Admin Manager",
+                      date: act.date,
+                      content: "Lead assigned to Relationship Manager Arun Kumar based on Chennai region allocation rules. Contact SLA set to 2 hours."
+                    }];
+                  }
+                  return [];
+                };
+                return (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between border-b pb-2 border-gray-100">
+                      <h4 className="text-[10px] font-black uppercase text-[#1a3c2a] tracking-wider">Activity Feed Trail</h4>
+                      <span className="text-[9px] text-gray-400 font-bold">{details.activities.length} Total Entries</span>
                     </div>
-                  ) : (
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-                      {[...details.comments]
-                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                        .map((msg) => {
-                          const isAdmin = msg.author.toLowerCase().includes("admin") || msg.type === "Manager Note" || msg.type === "Internal";
-                          return (
-                            <div
-                              key={msg.id}
-                              className={cn(
-                                "flex items-start gap-3 p-3 rounded-2xl border text-xs max-w-[85%] transition-all",
-                                isAdmin
-                                  ? "bg-amber-50/40 border-amber-100/60 ml-auto flex-row-reverse"
-                                  : "bg-[#FAF8F5] border-[#E8E2D6]"
-                              )}
-                            >
-                              <div className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center font-extrabold shrink-0 text-[10px]",
-                                isAdmin
-                                  ? "bg-[#0D2E1D] text-[#C9A82C]"
-                                  : "bg-emerald-500 text-white"
-                              )}>
-                                {msg.author.split(" ").map(n => n[0]).join("")}
-                              </div>
 
-                              <div className="space-y-1">
-                                <div className={cn(
-                                  "flex items-center gap-1.5 flex-wrap",
-                                  isAdmin && "justify-end"
-                                )}>
-                                  <span className="font-extrabold text-[#1A3C2A]">{msg.author}</span>
-                                  <span className={cn(
-                                    "px-1.5 py-0.2 rounded text-[7px] font-black uppercase tracking-tight",
-                                    isAdmin
-                                      ? "bg-[#FAF3E3] text-[#B5982C] border border-[#EBE3D0]"
-                                      : "bg-[#E8F5EC] text-emerald-800 border border-emerald-200"
-                                  )}>
-                                    {isAdmin ? "Admin / Mgr" : "RM Advisor"}
+                    <div className="relative border-l border-gray-150 pl-6 ml-3 space-y-6 text-xs">
+                      {sortedActivities.map((act) => {
+                        const styleConfig = getActivityIcon(act.type);
+                        const ActIcon = styleConfig.icon;
+                        return (
+                          <div
+                            key={act.id}
+                            onClick={() => setSelectedActivityId(selectedActivityId === act.id ? null : act.id)}
+                            className="relative min-h-[40px] flex flex-col justify-center cursor-pointer hover:bg-[#FAF8F5]/80 p-2.5 -ml-2.5 rounded-xl transition-all border border-transparent hover:border-gray-150 group"
+                          >
+                            <div className={cn(
+                              "absolute -left-[37px] top-2.5 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center shadow-sm",
+                              styleConfig.bg
+                            )}>
+                              <ActIcon size={10} />
+                            </div>
+
+                            <div className="space-y-1 pl-1">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                <span className="font-extrabold text-[#1A3C2A] uppercase text-[8px] tracking-wider bg-gray-100 border border-gray-150 px-1.5 py-0.2 rounded w-fit group-hover:bg-[#133C27] group-hover:text-white transition-colors">
+                                  {act.type}
+                                </span>
+                                <span className="text-gray-400 font-medium text-[9px]">{act.date}</span>
+                              </div>
+                              <p className="text-gray-700 font-bold text-[10.5px] mt-0.5">{act.description}</p>
+                              <div className="text-[9px] text-gray-404 font-semibold flex flex-wrap items-center gap-1.5 mt-0.5">
+                                <span>Actor:</span>
+                                <span className="text-gray-650 font-black">{act.performedBy}</span>
+                                {act.role && (
+                                  <span className="text-[8px] bg-amber-50 text-amber-800 px-1 py-0.2 border border-amber-250 rounded font-black uppercase">
+                                    {act.role}
                                   </span>
-                                  <span className="text-[8.5px] text-gray-400 font-medium">{msg.date}</span>
-                                </div>
-                                <p className={cn(
-                                  "text-gray-700 font-bold leading-normal mt-1 break-words text-[11px]",
-                                  isAdmin && "text-right"
-                                )}>
-                                  {msg.content}
-                                </p>
+                                )}
+                                {act.relatedStage && (
+                                  <span className="text-[8px] bg-[#E8F5EC] text-emerald-800 px-1 py-0.2 border border-emerald-250 rounded font-black uppercase">
+                                    Stage: {act.relatedStage}
+                                  </span>
+                                )}
                               </div>
+
+                              {selectedActivityId === act.id && (
+                                <div 
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="mt-3 p-3 bg-amber-50/50 border border-amber-200/60 rounded-xl space-y-2 relative animate-in fade-in slide-in-from-top-1 duration-150 shadow-sm"
+                                >
+                                  <div className="absolute -top-1 left-4 w-2 h-2 bg-amber-50 border-t border-l border-amber-200/60 rotate-45" />
+                                  <div className="flex items-center justify-between text-[8px] font-black uppercase text-[#B5982C]">
+                                    <span>RM Notes / Remarks Log</span>
+                                    <span className="text-[7.5px] font-black bg-amber-100 text-amber-850 px-1 rounded">Click to close</span>
+                                  </div>
+                                  
+                                  {getActivityComments(act).length === 0 ? (
+                                    <p className="text-gray-500 italic text-[10px] font-semibold">
+                                      No detailed RM comments logged for this entry.
+                                    </p>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {getActivityComments(act).map((c) => (
+                                        <div key={c.id} className="text-[10px] space-y-1 font-semibold text-gray-700">
+                                          <div className="flex items-center gap-1.5 text-[8.5px] text-gray-404 font-bold">
+                                            <span className="font-extrabold text-[#1A3C2A]">{c.author}</span>
+                                            <span>•</span>
+                                            <span>{c.date}</span>
+                                          </div>
+                                          <p className="leading-relaxed font-bold bg-white border border-amber-100/50 p-2.5 rounded-lg text-[10.5px] text-gray-800 shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
+                                            {c.content}
+                                          </p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          );
-                        })}
+                          </div>
+                        );
+                      })}
                     </div>
-                  )}
-
-                  {/* Send Message Form */}
-                  <form onSubmit={submitInternalChat} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm">
-                    <div className="flex items-center justify-between border-b pb-2">
-                      <span className="text-[10px] font-black uppercase text-primary tracking-wider">Post Message / Discussion note</span>
-                    </div>
-
-                    <div className="space-y-2">
-                      <textarea
-                        value={chatMessageContent}
-                        onChange={(e) => setChatMessageContent(e.target.value)}
-                        placeholder="Type a message to discuss with RM..."
-                        className="w-full text-xs font-medium p-2 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none focus:ring-1 focus:ring-primary min-h-[60px] resize-none"
-                        required
-                      />
-                    </div>
-
-                    <div className="flex justify-end pt-1">
-                      <button
-                        type="submit"
-                        className="px-4 py-1.5 bg-[#133C27] hover:bg-[#0d2e1d] text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
-                      >
-                        Send Message
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
+                  </div>
+                );
+              })()}
 
               {/* Follow-up Section */}
               {activeTab === "followups" && (() => {
@@ -1191,14 +1153,7 @@ export default function LeadDetailPage() {
                           <span>Change Stage</span>
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab("conversations")}
-                          className="py-2 px-3 bg-white border border-[#E8E2D6] hover:bg-gray-55 text-gray-700 text-[9px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <MessageSquare size={12} className="text-purple-600" />
-                          <span>Add Internal Note</span>
-                        </button>
+
 
                         <button
                           type="button"
@@ -1215,110 +1170,9 @@ export default function LeadDetailPage() {
               })()}
 
               {/* Negotiation hub & Action Forms */}
+              {/* Negotiation hub */}
               {activeTab === "negotiation" && (
                 <div className="space-y-6">
-                  
-                  {/* Inline log negotiation offer */}
-                  <form onSubmit={submitNegotiation} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm">
-                    <div className="flex items-center justify-between border-b pb-2">
-                      <span className="text-[10px] font-black uppercase text-primary tracking-wider">Log Negotiation / Offer Detail</span>
-                      <div className="flex items-center gap-1 border rounded bg-white p-0.5">
-                        {(["offer", "discount", "finalize"] as const).map((t) => (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => setNegotiationType(t)}
-                            className={cn(
-                              "px-2 py-0.5 rounded text-[8px] font-black uppercase transition-all cursor-pointer",
-                              negotiationType === t ? "bg-[#133C27] text-white" : "text-gray-400"
-                            )}
-                          >
-                            {t}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <label className="block text-[8px] font-black text-gray-455 uppercase mb-1">
-                          {negotiationType === "offer" ? "Counter Offer Price (₹)" : negotiationType === "discount" ? "Discount price (₹)" : "Final settled amount (₹)"}
-                        </label>
-                        <input
-                          type="text"
-                          value={negAmount}
-                          onChange={(e) => setNegAmount(e.target.value)}
-                          placeholder="e.g. 7300000"
-                          className="w-full font-bold p-1.5 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none"
-                          required
-                        />
-                      </div>
-
-                      {negotiationType === "offer" && (
-                        <div>
-                          <label className="block text-[8px] font-black text-[#133C27] uppercase mb-1">Offered By</label>
-                          <select
-                            value={negOfferedBy}
-                            onChange={(e) => setNegOfferedBy(e.target.value as any)}
-                            className="w-full font-bold p-1.5 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none cursor-pointer"
-                          >
-                            <option value="Customer">Customer</option>
-                            <option value="RM">Relationship Manager</option>
-                            <option value="Manager">Manager Approver</option>
-                          </select>
-                        </div>
-                      )}
-
-                      {negotiationType === "discount" && (
-                        <div>
-                          <label className="block text-[8px] font-black text-[#133C27] uppercase mb-1">Authorized Approver</label>
-                          <input
-                            type="text"
-                            value={negApprovedBy}
-                            onChange={(e) => setNegApprovedBy(e.target.value)}
-                            className="w-full font-bold p-1.5 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none"
-                            required
-                          />
-                        </div>
-                      )}
-
-                      {negotiationType === "finalize" && (
-                        <div>
-                          <label className="block text-[8px] font-black text-[#133C27] uppercase mb-1">Settlement Status</label>
-                          <select
-                            value={negStatus}
-                            onChange={(e) => setNegStatus(e.target.value as any)}
-                            className="w-full font-bold p-1.5 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none cursor-pointer"
-                          >
-                            <option value="Agreed">Agreed / Booked</option>
-                            <option value="Rejected">Rejected / Lost</option>
-                          </select>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2 text-xs">
-                      <div>
-                        <label className="block text-[8px] font-black text-gray-455 uppercase mb-1">remarks & justifications</label>
-                        <input
-                          type="text"
-                          value={negRemark}
-                          onChange={(e) => setNegRemark(e.target.value)}
-                          placeholder="Objections cleared, financing proof verified, finalized contract details..."
-                          className="w-full font-medium p-1.5 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end pt-1">
-                      <button
-                        type="submit"
-                        className="px-3.5 py-1.5 bg-[#C9A82C] hover:bg-[#B8960F] text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm"
-                      >
-                        Record {negotiationType}
-                      </button>
-                    </div>
-                  </form>
 
                   {/* Visual statistics grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 border border-[#E8E2D6] rounded-xl bg-gray-50 text-xs font-bold text-[#1A3C2A]">
@@ -1413,61 +1267,6 @@ export default function LeadDetailPage() {
               {/* Document vault vault grid */}
               {activeTab === "documents" && (
                 <div className="space-y-6">
-                  
-                  {/* Inline Document Upload Simulator */}
-                  <form onSubmit={submitDocument} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3 shadow-sm">
-                    <span className="text-[10px] font-black uppercase text-primary tracking-wider block">Simulate Document Vault Upload</span>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                      <div>
-                        <label className="block text-[8px] font-black text-gray-455 uppercase mb-1">Document Title</label>
-                        <input
-                          type="text"
-                          value={docName}
-                          onChange={(e) => setDocName(e.target.value)}
-                          placeholder="e.g. Aadhar_Card.pdf"
-                          className="w-full font-bold p-1.5 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-[8px] font-black text-gray-455 uppercase mb-1">Document Category</label>
-                        <select
-                          value={docType}
-                          onChange={(e) => setDocType(e.target.value as any)}
-                          className="w-full font-bold p-1.5 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none cursor-pointer text-gray-655"
-                        >
-                          <option value="Quotation">Quotation Sheet</option>
-                          <option value="Brochure">Brochure Catalog</option>
-                          <option value="Agreement">Contract Agreement</option>
-                          <option value="Customer Document">KYC Document</option>
-                          <option value="Site Visit Photo">Site Visit Media</option>
-                          <option value="Other">Other Miscellaneous</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[8px] font-black text-gray-455 uppercase mb-1">Uploader Author</label>
-                        <input
-                          type="text"
-                          value={docUploadedBy}
-                          onChange={(e) => setDocUploadedBy(e.target.value)}
-                          className="w-full font-bold p-1.5 bg-white border border-[#E8E2D6] rounded-lg focus:outline-none"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end pt-1">
-                      <button
-                        type="submit"
-                        className="px-3.5 py-1.5 bg-[#133C27] hover:bg-[#0d2e1d] text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm flex items-center gap-1"
-                      >
-                        <Upload size={10} /> Upload to Vault
-                      </button>
-                    </div>
-                  </form>
 
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-black uppercase text-[#1A3C2A] border-b pb-1 tracking-wider">File Repository Document List</h4>
@@ -1672,22 +1471,14 @@ export default function LeadDetailPage() {
                 <span>Transfer Ownership RM</span>
               </button>
 
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-dashed border-gray-150">
+              <div className="pt-2 border-t border-dashed border-gray-150 w-full">
                 <a
                   href="tel:+919940212345"
-                  className="py-2 border border-gray-200 hover:bg-gray-50 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-600 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  className="w-full py-2 border border-gray-200 hover:bg-gray-50 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-600 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Phone size={11} className="text-emerald-600" />
                   <span>Call RM</span>
                 </a>
-                
-                <button
-                  onClick={() => setActiveTab("conversations")}
-                  className="py-2 border border-gray-200 hover:bg-gray-50 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-600 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
-                >
-                  <MessageSquare size={11} className="text-blue-600" />
-                  <span>Chat RM</span>
-                </button>
               </div>
             </div>
           ) : (
